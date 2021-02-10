@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <property name="autoIncrement" value="true"/>
+
+    <changeSet id="00000000000001" author="huisheng.jin">
+        <createTable tableName="crawl_record_detail">
+            <column name="id" type="bigint" autoIncrement="${autoIncrement}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="record_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="author" type="varchar(50)"/>
+            <column name="subject" type="varchar(520)"/>
+            <column name="content" type="TEXT"/>
+            <column name="source" type="varchar(50)"/>
+            <column name="original_url" type="varchar(250)"/>
+
+            <column name="created_by" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp"/>
+            <column name="last_modified_by" type="varchar(50)"/>
+            <column name="last_modified_date" type="timestamp"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="202012231822002" author="huisheng.jin">
+        <createTable tableName="crawl_record">
+            <column name="id" type="bigint" autoIncrement="${autoIncrement}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="count" type="bigint"/>
+            <column name="crawl_urls" type="TEXT"/>
+
+            <column name="created_by" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp"/>
+            <column name="last_modified_by" type="varchar(50)"/>
+            <column name="last_modified_date" type="timestamp"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="202012231822003" author="huisheng.jin">
+        <modifyDataType tableName="crawl_record_detail" columnName="content" newDataType="clob"/>
+    </changeSet>
+    <changeSet id="202012231822004" author="huisheng.jin">
+        <addColumn tableName="crawl_record_detail">
+            <column name="sync" type="boolean"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="202012231822005" author="huisheng.jin">
+        <modifyDataType tableName="crawl_record_detail" columnName="author" newDataType="varchar(300)"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,26 @@
+jib {
+    from {
+        image = "adoptopenjdk:11-jre-hotspot"
+    }
+    to {
+        image = "codingstyle-cn-docker.pkg.coding.net/operation/registry/spider:master.latest"
+        auth {
+            username = 'huisheng.jinge@gmail.com'
+            password = 'VJ4Qf9noXdH1Esqc'
+        }
+    }
+    container {
+        entrypoint = ["bash", "-c", "/entrypoint.sh"]
+        ports = ["8080"]
+        environment = [
+            SPRING_OUTPUT_ANSI_ENABLED: "ALWAYS",
+            JHIPSTER_SLEEP: "0"
+        ]
+        creationTime = "USE_CURRENT_TIMESTAMP"
+    }
+    extraDirectories {
+      paths = file("src/main/jib")
+      permissions = ["/entrypoint.sh": "755"]
+    }
+}
+

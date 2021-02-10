@@ -1,0 +1,33 @@
+version: '3'
+services:
+  selenium:
+    image: selenium/standalone-chrome-debug
+    ports:
+      - 4444:4444
+      - 5900
+    volumes:
+      - ./shm:/dev/shm
+    environment:
+      - JAVA_OPTS=-Dwebdriver.chrome.whitelistedIps=
+
+  spider-mysql:
+    image: mysql:8.0.20
+    volumes:
+      - ~/volumes/jhipster/spider/mysql/:/var/lib/mysql/
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=spider
+    ports:
+      - 3306
+    command: mysqld --lower_case_table_names=1 --skip-ssl --character_set_server=utf8mb4 --explicit_defaults_for_timestamp
+  spider-app:
+    image: codingstyle-cn-docker.pkg.coding.net/operation/registry/spider:master.latest
+    environment:
+      - _JAVA_OPTIONS=-Xmx512m -Xms256m
+      - SPRING_PROFILES_ACTIVE=prod,swagger
+      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+      - SPRING_DATASOURCE_URL=jdbc:mysql://spider-mysql:3306/spider?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true
+      - JHIPSTER_SLEEP=30 # gives time for other services to boot before the application
+    ports:
+      - 8038:8080

@@ -21,7 +21,7 @@ public class JianShuPipeline extends PlatformPipeline {
     }
 
     @Override
-    protected String modifyContent(String content, List<String> imageUrls) {
+    public String modifyContent(String content, List<String> imageUrls) {
         content = modifyImages(content, imageUrls);
         return removeImageCaption(content);
     }

@@ -5,6 +5,6 @@
 ....待完善
 
 ## 框架
-框架生成 jhipster +vue
+框架 jhipster +vue init
 
-参考 [Environment.md](Environment.md)
+环境配置 [Environment.md](Environment.md)

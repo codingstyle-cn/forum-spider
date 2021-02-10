@@ -26,6 +26,7 @@ public class JianShuPipeline extends PlatformPipeline {
         return removeImageCaption(content);
     }
 
+    @Override
     protected String getCrawlingSource() {
         return CRAWLING_SOURCE;
     }

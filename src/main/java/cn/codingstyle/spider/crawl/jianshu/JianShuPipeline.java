@@ -34,7 +34,6 @@ public class JianShuPipeline extends PlatformPipeline {
     @Override
     protected String replaceAndUploadImage(String body, String currentYear, String url, String path) {
         String fileName = url.substring(url.lastIndexOf("/") + 1);
-        body = replaceImageUrl(body, currentYear, url, fileName);
         upYunHelper.uploadFile( url, path+"/"+fileName);
         return body;
     }

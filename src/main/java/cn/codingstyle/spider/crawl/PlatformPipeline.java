@@ -27,12 +27,8 @@ public abstract class PlatformPipeline implements Pipeline {
     @Override
     public void process(ResultItems resultItems, Task task) {
         CrawlOriginalData data = resultItems.get("crawlOriginalData");
-        System.out.println(data.getContent());
-        System.out.println("---getImageUrls:\n" + data.getImageUrls());
         String content = modifyContent(data.getContent(), data.getImageUrls());
-        System.out.println("---getContent:\n" + content);
-        CrawlRecordDetail crawlRecordDetail = createCrawlRecordDetail(data, content);
-        crawlRecordDetailService.save(crawlRecordDetail);
+        crawlRecordDetailService.save(createCrawlRecordDetail(data, content));
     }
 
     protected CrawlRecordDetail createCrawlRecordDetail(CrawlOriginalData data, String content) {

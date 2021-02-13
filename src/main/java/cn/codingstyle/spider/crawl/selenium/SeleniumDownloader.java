@@ -6,8 +6,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Site;
@@ -48,7 +46,57 @@ public class SeleniumDownloader implements Downloader, Closeable {
 
     @Override
     public Page download(Request request, Task task) {
-        checkInit();
+        WebDriver webDriver = getWebDriverFromPool();
+        if (webDriver == null) return null;
+
+        loadWebPage(webDriver, request.getUrl());
+        manageCookies(task.getSite(), webDriver.manage());
+        Page page = getPage(request, getOuterHTML(webDriver));
+        webDriverPool.returnToPool(webDriver);
+        return page;
+    }
+
+    private Page getPage(Request request, String content) {
+        Page page = new Page();
+        page.setRawText(content);
+        //TODO check if it is useful by testing
+        page.setHtml(new Html(content, request.getUrl()));
+        page.setUrl(new PlainText(request.getUrl()));
+        page.setRequest(request);
+        return page;
+    }
+
+    private String getOuterHTML(WebDriver webDriver) {
+        WebElement webElement = webDriver.findElement(By.xpath("/html"));
+        return webElement.getAttribute("outerHTML");
+    }
+
+    //TODO check if it is useful by integration testing
+    private void manageCookies(Site site, WebDriver.Options options) {
+        if (site.getCookies() != null) {
+            for (Map.Entry<String, String> cookieEntry : site.getCookies()
+                .entrySet()) {
+                Cookie cookie = new Cookie(cookieEntry.getKey(),
+                    cookieEntry.getValue());
+                options.addCookie(cookie);
+            }
+        }
+    }
+
+    private void loadWebPage(WebDriver webDriver, String requestUrl) {
+        logger.info("downloading page " + requestUrl);
+        webDriver.get(requestUrl);
+        try {
+            Thread.sleep(sleepTime);
+        } catch (InterruptedException e) {
+            logger.error("Thread sleeping error", e);
+        }
+        logger.info("downloading page complete");
+
+    }
+
+    private WebDriver getWebDriverFromPool() {
+        initWebDriverPool();//
         WebDriver webDriver;
         try {
             webDriver = webDriverPool.get();
@@ -56,39 +104,13 @@ public class SeleniumDownloader implements Downloader, Closeable {
             logger.warn("interrupted", e);
             return null;
         }
-        logger.info("downloading page " + request.getUrl());
-        webDriver.get(request.getUrl());
-        try {
-            Thread.sleep(sleepTime);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        WebDriver.Options manage = webDriver.manage();
-        Site site = task.getSite();
-        if (site.getCookies() != null) {
-            for (Map.Entry<String, String> cookieEntry : site.getCookies()
-                .entrySet()) {
-                Cookie cookie = new Cookie(cookieEntry.getKey(),
-                    cookieEntry.getValue());
-                manage.addCookie(cookie);
-            }
-        }
-
-        WebElement webElement = webDriver.findElement(By.xpath("/html"));
-        String content = webElement.getAttribute("outerHTML");
-        Page page = new Page();
-        page.setRawText(content);
-        page.setHtml(new Html(content, request.getUrl()));
-        page.setUrl(new PlainText(request.getUrl()));
-        page.setRequest(request);
-        webDriverPool.returnToPool(webDriver);
-        return page;
+        return webDriver;
     }
 
-    private void checkInit() {
+    private void initWebDriverPool() {
         if (webDriverPool == null) {
             synchronized (this) {
-                webDriverPool = new WebDriverPool(hostUrl,poolSize);
+                webDriverPool = new WebDriverPool(hostUrl, poolSize);
             }
         }
     }

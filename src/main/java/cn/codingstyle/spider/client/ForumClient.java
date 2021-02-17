@@ -21,11 +21,11 @@ import java.util.Map;
 @FeignClient(name = "forumClient", url = "${forum.host}", configuration = ForumClient.FormSupportConfig.class)
 public interface ForumClient {
     @RequestMapping(method = RequestMethod.POST, value = "/oauth/token")
-    AccessToken getToken(@RequestParam(defaultValue = "password") String grant_type,
-                         @RequestParam String username,
-                         @RequestParam String password,
-                         @RequestParam String client_id,
-                         @RequestParam String client_secret);
+    AccessToken getToken(@RequestParam(name = "grant_type", defaultValue = "password") String grant_type,
+                         @RequestParam("username") String username,
+                         @RequestParam("password") String password,
+                         @RequestParam("client_id") String client_id,
+                         @RequestParam("client_secret") String client_secret);
 
 
     @PostMapping(value = "/api/v3/topics",

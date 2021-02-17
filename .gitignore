@@ -147,3 +147,4 @@ Desktop.ini
 ######################
 .eslintcache
 images
+src/main/generated/

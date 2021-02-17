@@ -148,3 +148,4 @@ Desktop.ini
 .eslintcache
 images
 src/main/generated/
+src/main/docker/shm/

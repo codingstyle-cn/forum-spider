@@ -15,13 +15,12 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static cn.codingstyle.spider.Await.await;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,7 +45,11 @@ class SpiderResourceIT {
         )
                 .andExpect(status().isOk());
 
-        assertEqualsUntil(2, () -> crawlRecordDetailRepository.findAll().size());
+//        assertEqualsUntil(2, () -> crawlRecordDetailRepository.findAll().size());
+
+        await().atMost(3, SECONDS)
+            .until(() -> crawlRecordDetailRepository.findAll().size())
+            .isEqualTo(3);
 
         List<CrawlRecordDetail> articles = crawlRecordDetailRepository.findAll();
         assertThat(articles.size()).isEqualTo(2);

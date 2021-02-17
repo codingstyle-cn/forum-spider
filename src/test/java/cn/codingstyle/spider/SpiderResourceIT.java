@@ -5,6 +5,7 @@ import cn.codingstyle.spider.domain.CrawlRecordDetail;
 import cn.codingstyle.spider.domain.CrawlRecordDetailRepository;
 import cn.codingstyle.web.rest.TestUtil;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,9 +15,13 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,7 +46,7 @@ class SpiderResourceIT {
         )
                 .andExpect(status().isOk());
 
-        Thread.sleep(15000);
+        assertEqualsUntil(2, () -> crawlRecordDetailRepository.findAll().size());
 
         List<CrawlRecordDetail> articles = crawlRecordDetailRepository.findAll();
         assertThat(articles.size()).isEqualTo(2);
@@ -59,6 +64,31 @@ class SpiderResourceIT {
         assertThat(weixinMpArticle.getSubject()).isEqualTo("Jenkins workflowLibs库的使(妙)用");
         assertThat(removeImg(weixinMpArticle.getContent())).isEqualTo(expectedMpContent());
 
+    }
+
+    private void assertEqualsUntil(int expected, Supplier<Integer> actualSupplier) {
+        int timeWaited = 0;
+        final int kTimeoutMillis = 30000;
+        while (true) {
+            Integer actual = actualSupplier.get();
+            if (actual == expected) {
+                System.out.println("Assertion passed. timeWaited = " + timeWaited);
+                return;
+            }
+
+            if (timeWaited >= kTimeoutMillis) {
+                Assertions.fail(String.format("Assertion failed. Expected: %d; Actual: %d", expected, actual));
+            }
+
+            try {
+                int tickTime = 1000;
+                Thread.sleep(tickTime);
+                timeWaited += tickTime;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     private String expectedMpContent() {

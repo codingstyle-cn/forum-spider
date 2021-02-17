@@ -45,11 +45,9 @@ class SpiderResourceIT {
         )
                 .andExpect(status().isOk());
 
-//        assertEqualsUntil(2, () -> crawlRecordDetailRepository.findAll().size());
-
-        await().atMost(3, SECONDS)
+        await().atMost(30, SECONDS)
             .until(() -> crawlRecordDetailRepository.findAll().size())
-            .isEqualTo(3);
+            .isEqualTo(2);
 
         List<CrawlRecordDetail> articles = crawlRecordDetailRepository.findAll();
         assertThat(articles.size()).isEqualTo(2);

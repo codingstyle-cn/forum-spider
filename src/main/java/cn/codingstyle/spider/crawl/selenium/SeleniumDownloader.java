@@ -1,21 +1,17 @@
 package cn.codingstyle.spider.crawl.selenium;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
-import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.downloader.Downloader;
-import us.codecraft.webmagic.selector.Html;
 import us.codecraft.webmagic.selector.PlainText;
 
 import java.io.Closeable;
-import java.util.Map;
 
 public class SeleniumDownloader implements Downloader, Closeable {
 
@@ -50,7 +46,6 @@ public class SeleniumDownloader implements Downloader, Closeable {
         if (webDriver == null) return null;
 
         loadWebPage(webDriver, request.getUrl());
-        manageCookies(task.getSite(), webDriver.manage());
         Page page = getPage(request, getOuterHTML(webDriver));
         webDriverPool.returnToPool(webDriver);
         return page;
@@ -59,8 +54,6 @@ public class SeleniumDownloader implements Downloader, Closeable {
     private Page getPage(Request request, String content) {
         Page page = new Page();
         page.setRawText(content);
-        //TODO check if it is useful by testing
-        page.setHtml(new Html(content, request.getUrl()));
         page.setUrl(new PlainText(request.getUrl()));
         page.setRequest(request);
         return page;
@@ -69,18 +62,6 @@ public class SeleniumDownloader implements Downloader, Closeable {
     private String getOuterHTML(WebDriver webDriver) {
         WebElement webElement = webDriver.findElement(By.xpath("/html"));
         return webElement.getAttribute("outerHTML");
-    }
-
-    //TODO check if it is useful by integration testing
-    private void manageCookies(Site site, WebDriver.Options options) {
-        if (site.getCookies() != null) {
-            for (Map.Entry<String, String> cookieEntry : site.getCookies()
-                .entrySet()) {
-                Cookie cookie = new Cookie(cookieEntry.getKey(),
-                    cookieEntry.getValue());
-                options.addCookie(cookie);
-            }
-        }
     }
 
     private void loadWebPage(WebDriver webDriver, String requestUrl) {

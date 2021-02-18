@@ -23,7 +23,10 @@ public class SpiderAppService {
                 createCrawlCommand.getArticleCount(),
                 createCrawlCommand.getUrlsInString());
         for (Crawler crawler : crawlers) {
-            crawler.crawl(createCrawlCommand.filterUrlsBy(crawler.getBaseURL()), savedCrawlRecord.getId());
+            List<String> crawlingUrls = createCrawlCommand.filterUrlsBy(crawler.getBaseURL());
+            if (crawlingUrls.size() > 0) {
+                crawler.crawl(crawlingUrls, savedCrawlRecord.getId());
+            }
         }
     }
 

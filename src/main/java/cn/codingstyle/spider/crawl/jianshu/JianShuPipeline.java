@@ -34,16 +34,16 @@ public class JianShuPipeline extends PlatformPipeline {
     @Override
     protected String replaceAndUploadImage(String body, String currentYear, String url, String path) {
         String fileName = url.substring(url.lastIndexOf("/") + 1);
-        upYunHelper.uploadFile( url, path+"/"+fileName);
+        upYunHelper.uploadFile(url, path + "/" + fileName);
         return body;
     }
 
     protected String replaceImageUrl(String body, String currentYear, String url, String fileName) {
         body = body.replaceAll("data-original-src=\"" + url + "\""
-                , "data-original-src=\"https://file.codingstyle.cn/article/photo/"
-                        + currentYear + "/" + fileName + "\""
-                        + " src=\"https://file.codingstyle.cn/article/photo/"
-                        + currentYear + "/" + fileName + "\"");
+            , "data-original-src=\"https://file.codingstyle.cn/article/photo/"
+                + currentYear + "/" + fileName + "\""
+                + " src=\"https://file.codingstyle.cn/article/photo/"
+                + currentYear + "/" + fileName + "\"");
         return body;
     }
 }

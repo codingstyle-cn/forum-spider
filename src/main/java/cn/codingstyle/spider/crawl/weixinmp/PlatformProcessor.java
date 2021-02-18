@@ -1,6 +1,7 @@
 package cn.codingstyle.spider.crawl.weixinmp;
 
 import cn.codingstyle.spider.crawl.CrawlOriginalData;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Site;
@@ -9,6 +10,7 @@ import us.codecraft.webmagic.selector.Html;
 
 import java.util.List;
 
+@Slf4j
 public abstract class PlatformProcessor implements PageProcessor {
     private Long recordId;
 
@@ -34,7 +36,7 @@ public abstract class PlatformProcessor implements PageProcessor {
         String author = parseAuthor(html);
         String subject = parseSubject(html);
         String content = parseContent(html);
-        System.out.println("author:" + author + " article content is :\r\n" + StringUtils.isNotBlank(content));
+        log.info("author: {}, article content is not blank? : {}", author, StringUtils.isNotBlank(content));
         List<String> imageUrls = parseImageUrls(html);
         return createCrawlOriginalData(originalUrl, author, subject, content, imageUrls);
     }
@@ -43,13 +45,13 @@ public abstract class PlatformProcessor implements PageProcessor {
                                                         String subject, String content,
                                                         List<String> imageUrls) {
         return CrawlOriginalData.builder()
-                .author(author)
-                .subject(subject)
-                .content(content)
-                .imageUrls(imageUrls)
-                .originalUrl(originalUrl)
-                .recordId(getRecordId())
-                .build();
+            .author(author)
+            .subject(subject)
+            .content(content)
+            .imageUrls(imageUrls)
+            .originalUrl(originalUrl)
+            .recordId(getRecordId())
+            .build();
     }
 
     @Override

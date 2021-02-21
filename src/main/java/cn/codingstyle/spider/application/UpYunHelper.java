@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 
+import static java.lang.String.format;
+
 @Component
 @Slf4j
 public class UpYunHelper {
@@ -23,10 +25,12 @@ public class UpYunHelper {
 
     public void uploadFile2(String currentYear, String url, String fileName) {
         try {
-            boolean result = upload2(url, fileName, "/article/photo/" + currentYear + "/" + fileName);
+            boolean result = upload2(currentYear, url, fileName);
             log.info("上传又拍云结果:{}", result);
         } catch (Exception e) {
-            log.error("上传又拍云失败:error:{}", e.getMessage(), e);
+            String errorMsg = format("上传又拍云失败: %s, url: %s", e.getMessage(), url);
+            log.error(errorMsg, e);
+            throw new RuntimeException(errorMsg);
         }
     }
 

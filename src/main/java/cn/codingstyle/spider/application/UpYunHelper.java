@@ -23,9 +23,9 @@ public class UpYunHelper {
         this.upYunConfig = upYunConfig;
     }
 
-    public void uploadFile2(String currentYear, String url, String fileName) {
+    public void uploadFile(String currentYear, String url, String fileName) {
         try {
-            boolean result = upload2(currentYear, url, fileName);
+            boolean result = upload(currentYear, url, fileName);
             log.info("上传又拍云结果:{}", result);
         } catch (Exception e) {
             String errorMsg = format("上传又拍云失败: %s, url: %s", e.getMessage(), url);
@@ -34,39 +34,9 @@ public class UpYunHelper {
         }
     }
 
-    private boolean upload2(String currentYear, String url, String fileName) throws Exception {
+    private boolean upload(String currentYear, String url, String fileName) throws Exception {
         File file = fileUtil.downloadFile(url,fileName);
         boolean result = upload(file, "/article/photo/" + currentYear + "/" + fileName);
-        file.delete();
-        return result;
-    }
-
-    public void uploadFile(String currentYear, String url, String fileName) {
-        try {
-            boolean result = upload("/article/photo/" + currentYear + "/" + fileName, "https:" + url);
-            log.info("上传又拍云结果:{}", result);
-        } catch (Exception e) {
-            log.error("上传又拍云失败:error:{}", e.getMessage(), e);
-        }
-    }
-    public void uploadFile(String url, String path) {
-        try {
-            boolean result = upload(url, path);
-            log.info("上传又拍云结果:{}", result);
-        } catch (Exception e) {
-            log.error("上传又拍云失败:error:{}", e.getMessage(), e);
-        }
-    }
-
-//    private boolean processFile(String url, String path) throws Exception {
-//        File file = fileUtil.downloadFile("https:" + url);
-//
-//        return false;
-//    }
-
-    private boolean upload(String filePath, String url) throws Exception {
-        File file = fileUtil.downloadFile(url);
-        boolean result = upload(file, filePath);
         file.delete();
         return result;
     }

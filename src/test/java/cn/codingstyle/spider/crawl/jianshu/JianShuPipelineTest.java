@@ -31,9 +31,8 @@ class JianShuPipelineTest {
         List<String> urls = singletonList("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png");
 
         String modifiedContent = jianShuPipeline.modifyContent(content, urls);
-        verify(upYunHelper).uploadFile("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png", "/article/photo/" +
-            currentYear +
-            "/4790087-0a958b58ad2c6511.png");
+        String fileName = "/article/photo/" + currentYear + "/4790087-0a958b58ad2c6511.png";
+        verify(upYunHelper).uploadFile(currentYear, "//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png", fileName);
         assertThat(modifiedContent).isEqualTo(expectedContent());
     }
 

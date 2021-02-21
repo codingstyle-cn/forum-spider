@@ -1,5 +1,6 @@
 package cn.codingstyle.spider;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -19,6 +20,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
 @Component
+@Slf4j
 public class FileUtil {
 
     @Autowired
@@ -28,7 +30,7 @@ public class FileUtil {
         this.restTemplate = restTemplate;
     }
 
-    public File downloadFile(String url,String fileName) throws Exception {
+    public File downloadFile(String url, String fileName) throws Exception {
         Instant start = Instant.now();
         String targetPath = createParentPath() + fileName;
         RequestCallback requestCallback = request -> request.getHeaders()
@@ -43,32 +45,18 @@ public class FileUtil {
         return new File(targetPath);
     }
 
-    public File downloadFile2(String url) throws Exception {
-        Instant start = Instant.now();
-        RequestCallback requestCallback = request -> request.getHeaders()
-            .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
-        deleteFile(url);
-        restTemplate.execute(URI.create(url), HttpMethod.GET, requestCallback, clientHttpResponse -> {
-            Files.copy(clientHttpResponse.getBody(), Paths.get(url));
-            return null;
-        });
-        System.out.println("文件下载完成，耗时：" + ChronoUnit.MILLIS.between(start, Instant.now())
-            + " 毫秒");
-        return new File(url);
-    }
-
     public File downloadFile(String url) throws Exception {
+        log.info("start download file from: {}", url);
         Instant start = Instant.now();
         String targetPath = createParentPath() + url.substring(url.lastIndexOf("/") + 1);
         RequestCallback requestCallback = request -> request.getHeaders()
-                .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
+            .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
         deleteFile(targetPath);
         restTemplate.execute(URI.create(url), HttpMethod.GET, requestCallback, clientHttpResponse -> {
             Files.copy(clientHttpResponse.getBody(), Paths.get(targetPath));
             return null;
         });
-        System.out.println("文件下载完成，耗时：" + ChronoUnit.MILLIS.between(start, Instant.now())
-                + " 毫秒");
+        log.info("file download success, cost time: {} ms", ChronoUnit.MILLIS.between(start, Instant.now()));
         return new File(targetPath);
     }
 

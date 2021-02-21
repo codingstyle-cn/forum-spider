@@ -42,7 +42,7 @@ public class UpYunHelper {
         return result;
     }
 
-    private boolean upload(File file, String filePath) throws IOException, UpException {
+    private boolean upload(File file, String uploadFilePath) throws IOException, UpException {
         log.info("又拍云账号:\n{}", JSON.toJSONString(upYunConfig));
         UpYun upyun = new UpYun(
             upYunConfig.getBucketName(),
@@ -55,21 +55,20 @@ public class UpYunHelper {
         //计算文件 MD5，如果文件太大或计算不便，可以不计算
         upyun.setContentMD5(UpYun.md5(file));
         // 文件上传
-        return upyun.writeFile(filePath, file);
+        return upyun.writeFile(uploadFilePath, file);
     }
 
-    public void uploadFile2(String originalUrl, String fileName) {
+    public void uploadFile2(String sourceUrl, String fileName) {
         File file = null;
         try {
-            file = fileUtil.downloadFile(originalUrl);
-            String currentYear = String.valueOf(LocalDate.now().getYear());
-            String uploadPath = "/article/photo/" + currentYear + "/" + fileName;
-            boolean result = upload(file, uploadPath);
+            file = fileUtil.downloadFile(sourceUrl);
+            String uploadFilePath = "/article/photo/" + String.valueOf(LocalDate.now().getYear()) + "/" + fileName;
+            boolean result = upload(file, uploadFilePath);
             if (!result) {
                 throw new RuntimeException("upload file to UpYun Failed");
             }
         } catch (Exception e) {
-            String errorMsg = format("上传图片失败: %s, url: %s", e.getMessage(), fileName);
+            String errorMsg = format("上传图片失败: source url: %s", fileName);
             log.error(errorMsg, e);
             throw new RuntimeException(errorMsg);
         } finally {

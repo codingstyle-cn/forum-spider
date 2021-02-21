@@ -35,9 +35,9 @@ class WeixinMpPipelineTest {
         List<String> urls = singletonList("https://mmbiz.qpic.cn/mmbiz_png/Oy8CSKcrQ44Mbs2MZichqVn5wbPjPAQrdPCZfusl6KKfTLJoZ6QxdXZ8bzTic6tiaZbX6TVbG1LABfYX0Btv7ial1Q/640?wx_fmt=png");
 
         String modifiedContent = pipeline.modifyContent(content, urls);
-        String originalImgUrl = "https://mmbiz.qpic.cn/mmbiz_png/Oy8CSKcrQ44Mbs2MZichqVn5wbPjPAQrdPCZfusl6KKfTLJoZ6QxdXZ8bzTic6tiaZb" +
+        String sourceImgUrl = "https://mmbiz.qpic.cn/mmbiz_png/Oy8CSKcrQ44Mbs2MZichqVn5wbPjPAQrdPCZfusl6KKfTLJoZ6QxdXZ8bzTic6tiaZb" +
             "X6TVbG1LABfYX0Btv7ial1Q/640";
-        verify(upYunHelper).uploadFile2(originalImgUrl, fileName);
+        verify(upYunHelper).uploadFile2(sourceImgUrl, fileName);
         assertThat(modifiedContent).isEqualTo(expectedContent());
     }
 

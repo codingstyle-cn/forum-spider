@@ -35,9 +35,7 @@ public class WeixinMpPipeline extends PlatformPipeline {
         String imageType = url.substring(url.lastIndexOf("=") + 1);
         String fileName = fileNameGenerator.createFileName(imageType);
         String newUrl = "https://file.codingstyle.cn/article/photo/" + currentYear + "/" + fileName;
-        System.out.println("vvvvv: " + newUrl);
         body = replaceImageUrl(body, imageRealUrl, newUrl);
-//        upYunHelper.uploadFile(currentYear, imageRealUrl, fileName);
         upYunHelper.uploadFile2(imageRealUrl, fileName);
         return body;
     }

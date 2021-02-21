@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 
 import static java.lang.String.format;
 
@@ -35,7 +36,7 @@ public class UpYunHelper {
     }
 
     private boolean upload(String currentYear, String url, String fileName) throws Exception {
-        File file = fileUtil.downloadFile(url,fileName);
+        File file = fileUtil.downloadFile(url, fileName);
         boolean result = upload(file, "/article/photo/" + currentYear + "/" + fileName);
         file.delete();
         return result;
@@ -44,9 +45,9 @@ public class UpYunHelper {
     private boolean upload(File file, String filePath) throws IOException, UpException {
         log.info("又拍云账号:\n{}", JSON.toJSONString(upYunConfig));
         UpYun upyun = new UpYun(
-                upYunConfig.getBucketName(),
-                upYunConfig.getUsername(),
-                upYunConfig.getPassword());
+            upYunConfig.getBucketName(),
+            upYunConfig.getUsername(),
+            upYunConfig.getPassword());
         // 可选属性1，是否开启 debug 模式，默认不开启
         upyun.setDebug(false);
         // 可选属性2，超时时间，默认 30s
@@ -55,5 +56,27 @@ public class UpYunHelper {
         upyun.setContentMD5(UpYun.md5(file));
         // 文件上传
         return upyun.writeFile(filePath, file);
+    }
+
+    public void uploadFile2(String originalUrl, String fileName) {
+        File file = null;
+        try {
+            file = fileUtil.downloadFile(originalUrl);
+            String currentYear = String.valueOf(LocalDate.now().getYear());
+            String uploadPath = "/article/photo/" + currentYear + "/" + fileName;
+            boolean result = upload(file, uploadPath);
+            if (!result) {
+                throw new RuntimeException("upload file to UpYun Failed");
+            }
+        } catch (Exception e) {
+            String errorMsg = format("上传图片失败: %s, url: %s", e.getMessage(), fileName);
+            log.error(errorMsg, e);
+            throw new RuntimeException(errorMsg);
+        } finally {
+            if (file != null) {
+                file.delete();
+            }
+        }
+
     }
 }

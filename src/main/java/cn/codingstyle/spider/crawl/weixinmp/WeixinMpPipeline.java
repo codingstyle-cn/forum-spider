@@ -40,10 +40,6 @@ public class WeixinMpPipeline extends PlatformPipeline {
         return body;
     }
 
-    private String createFileName(String imageType) {
-        return fileNameGenerator.createFileName(imageType);
-    }
-
     protected String replaceImageUrl(String body, String oldUrl, String newUrl) {
         body = body.replaceAll(oldUrl, newUrl + "\" src=\"" + newUrl);
         return body;

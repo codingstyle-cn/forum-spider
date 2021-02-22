@@ -1,10 +1,7 @@
 package cn.codingstyle.spider.crawl.jianshu;
 
-import cn.codingstyle.spider.crawl.CrawlOriginalData;
 import cn.codingstyle.spider.crawl.weixinmp.PlatformProcessor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.selector.Html;
 
 import java.util.List;

@@ -2,11 +2,11 @@ package cn.codingstyle.spider;
 
 import cn.codingstyle.spider.application.CreateCrawlCommand;
 import cn.codingstyle.spider.application.UpYunHelper;
+import cn.codingstyle.spider.crawl.weixinmp.FileNameGenerator;
 import cn.codingstyle.spider.domain.CrawlRecordDetail;
 import cn.codingstyle.spider.domain.CrawlRecordDetailRepository;
 import cn.codingstyle.web.rest.TestUtil;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,13 +16,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import static cn.codingstyle.spider.Await.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,16 +30,47 @@ class SpiderResourceIT {
 
     @Autowired
     MockMvc mockMvc;
+
     @MockBean
     UpYunHelper upYunHelper;
+
+    @MockBean
+    FileNameGenerator fileNameGenerator;
 
     @Autowired
     private CrawlRecordDetailRepository crawlRecordDetailRepository;
 
+    @BeforeEach
+    void setUp() {
+        crawlRecordDetailRepository.deleteAll();
+    }
+
     @Test
-    void should_crawl_multiple_platforms() throws Exception {
+    void should_crawl_jianshu_platform_success() throws Exception {
         CreateCrawlCommand command = new CreateCrawlCommand();
-        command.setUrls("https://www.jianshu.com/p/e1810fdf5d11\nhttps://mp.weixin.qq.com/s/NfJ_EafbZPyPLZEeHz0Dkw");
+        command.setUrls("https://www.jianshu.com/p/e1810fdf5d11");
+        postAndWait(command);
+
+        CrawlRecordDetail jianshuArticle = crawlRecordDetailRepository.findAll().get(0);
+        assertThat(jianshuArticle.getAuthor()).isEqualTo("武可");
+        assertThat(jianshuArticle.getSubject()).isEqualTo("改善参数过多的方法");
+        assertThat(jianshuArticle.getContent()).isEqualTo(expectedJianshuContent());
+    }
+
+    @Test
+    void should_crawl_weixinmp_platform_success() throws Exception {
+        CreateCrawlCommand command = new CreateCrawlCommand();
+        command.setUrls("https://mp.weixin.qq.com/s/NfJ_EafbZPyPLZEeHz0Dkw");
+        when(fileNameGenerator.createFileName("png")).thenReturn("1.png");
+        postAndWait(command);
+
+        CrawlRecordDetail weixinMpArticle = crawlRecordDetailRepository.findAll().get(0);
+        assertThat(weixinMpArticle.getAuthor()).isEqualTo("<span class=\"rich_media_meta rich_media_meta_text\"> SSgeek </span>");
+        assertThat(weixinMpArticle.getSubject()).isEqualTo("Jenkins workflowLibs库的使(妙)用");
+        assertThat(weixinMpArticle.getContent()).isEqualTo(expectedMpContent());
+    }
+
+    private void postAndWait(CreateCrawlCommand command) throws Exception {
         mockMvc.perform(post("/api/spider/crawl")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestUtil.convertObjectToJsonBytes(command))
@@ -50,62 +78,11 @@ class SpiderResourceIT {
                 .andExpect(status().isOk());
 
         await().atMost(30, SECONDS)
-            .until(() -> crawlRecordDetailRepository.findAll().size())
-            .isEqualTo(2);
-
-        List<CrawlRecordDetail> articles = crawlRecordDetailRepository.findAll();
-        assertThat(articles.size()).isEqualTo(2);
-        List<String> urls = articles.stream().map(CrawlRecordDetail::getOriginalUrl).collect(Collectors.toList());
-        assertThat(urls).contains("https://www.jianshu.com/p/e1810fdf5d11");
-        assertThat(urls).contains("https://mp.weixin.qq.com/s/NfJ_EafbZPyPLZEeHz0Dkw");
-
-        CrawlRecordDetail jianshuArticle = articles.stream().filter(article -> article.getOriginalUrl().equals("https://www.jianshu.com/p/e1810fdf5d11")).findFirst().get();
-        assertThat(jianshuArticle.getAuthor()).isEqualTo("武可");
-        assertThat(jianshuArticle.getSubject()).isEqualTo("改善参数过多的方法");
-        assertThat(jianshuArticle.getContent()).isEqualTo(expectedJianshuContent());
-
-        CrawlRecordDetail weixinMpArticle = articles.stream().filter(article -> article.getOriginalUrl().equals("https://mp.weixin.qq.com/s/NfJ_EafbZPyPLZEeHz0Dkw")).findFirst().get();
-        assertThat(weixinMpArticle.getAuthor()).isEqualTo("<span class=\"rich_media_meta rich_media_meta_text\"> SSgeek </span>");
-        assertThat(weixinMpArticle.getSubject()).isEqualTo("Jenkins workflowLibs库的使(妙)用");
-        assertThat(removeImg(weixinMpArticle.getContent())).isEqualTo(expectedMpContent());
-
-    }
-
-    private void assertEqualsUntil(int expected, Supplier<Integer> actualSupplier) {
-        int timeWaited = 0;
-        final int kTimeoutMillis = 30000;
-        while (true) {
-            Integer actual = actualSupplier.get();
-            if (actual == expected) {
-                System.out.println("Assertion passed. timeWaited = " + timeWaited);
-                return;
-            }
-
-            if (timeWaited >= kTimeoutMillis) {
-                Assertions.fail(String.format("Assertion failed. Expected: %d; Actual: %d", expected, actual));
-            }
-
-            try {
-                int tickTime = 1000;
-                Thread.sleep(tickTime);
-                timeWaited += tickTime;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-        }
+                .until(() -> crawlRecordDetailRepository.findAll().size())
+                .isEqualTo(1);
     }
 
     private String expectedMpContent() {
-        return removeImg(originalContent());
-    }
-
-    @NotNull
-    private String removeImg(String content) {
-        return content.replaceAll("<img.*?(?:>|\\/>)", "");
-    }
-
-    private String originalContent() {
         return "<div class=\"rich_media_content \" id=\"js_content\" style=\"visibility: visible;\"> \n" +
                 " <section data-tool=\"mdnice编辑器\" data-website=\"https://www.mdnice.com\" style=\"font-size: 16px;color: black;padding-right: 10px;padding-left: 10px;line-height: 1.6;letter-spacing: 0px;word-break: break-word;overflow-wrap: break-word;text-align: left;font-family: Optima-Regular, Optima, PingFangSC-light, PingFangTC-light, &quot;PingFang SC&quot;, Cambria, Cochin, Georgia, Times, &quot;Times New Roman&quot;, serif;\">\n" +
                 "  <p data-tool=\"mdnice编辑器\" style=\"padding-top: 8px;padding-bottom: 8px;line-height: 26px;\">目录</p>\n" +
@@ -179,10 +156,10 @@ class SpiderResourceIT {
                 "  <p data-tool=\"mdnice编辑器\" style=\"padding-top: 8px;padding-bottom: 8px;line-height: 26px;\">重新应用资源清单</p>\n" +
                 "  <pre data-tool=\"mdnice编辑器\" style=\"margin-top: 10px;margin-bottom: 10px;border-radius: 5px;box-shadow: rgba(0, 0, 0, 0.55) 0px 2px 10px;\"><span style=\"display: block;background: url(&quot;https://mmbiz.qpic.cn/mmbiz_png/Oy8CSKcrQ44Mbs2MZichqVn5wbPjPAQrdRQfeoBbqeXLRV4LfRP5UMTlLUNbTicCKDsINCNKHic3UUn1PK9TvN5HA/640?wx_fmt=png&quot;) 10px 10px / 40px no-repeat rgb(40, 44, 52);height: 30px;width: 100%;margin-bottom: -7px;border-radius: 5px;\"></span><code style=\"overflow-x: auto;padding: 16px;color: #abb2bf;display: -webkit-box;font-family: Operator Mono, Consolas, Monaco, Menlo, monospace;font-size: 12px;-webkit-overflow-scrolling: touch;padding-top: 15px;background: #282c34;border-radius: 5px;\"><span style=\"color: #61aeee;line-height: 26px;\">$</span><span style=\"line-height: 26px;\">&nbsp;kubectl&nbsp;apply&nbsp;-f&nbsp;jenkins-svc.yaml</span></code></pre>\n" +
                 "  <p data-tool=\"mdnice编辑器\" style=\"padding-top: 8px;padding-bottom: 8px;line-height: 26px;\">登录到<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">Jenkins</code>，系统配置—&gt;全局安全配置—&gt;<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">SSH Server</code>，设置<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">ssh</code>端口，这个端口与上面<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">Service</code>中指定的端口对应</p>\n" +
-                "  <img data-ratio=\"0.362962962962963\" data-src=\"https://file.codingstyle.cn/article/photo/2021/89d46a87-ed1e-41a3-ac29-490ed6504614.png\" src=\"https://file.codingstyle.cn/article/photo/2021/89d46a87-ed1e-41a3-ac29-490ed6504614.png?wx_fmt=png\" data-type=\"png\" data-w=\"1350\" style=\"display: block; margin-right: auto; margin-left: auto; zoom: 80%; width: 657px !important; height: 240.059px !important;\" _width=\"677px\" class=\"img_loading\" src=\"data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==\" crossorigin=\"anonymous\">\n" +
+                "  <img data-ratio=\"0.362962962962963\" data-src=\"https://file.codingstyle.cn/article/photo/2021/1.png\" src=\"https://file.codingstyle.cn/article/photo/2021/1.png?wx_fmt=png\" data-type=\"png\" data-w=\"1350\" style=\"display: block; margin-right: auto; margin-left: auto; zoom: 80%; width: 657px !important; height: 240.059px !important;\" _width=\"677px\" class=\"img_loading\" src=\"data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==\" crossorigin=\"anonymous\">\n" +
                 "  <h3 data-tool=\"mdnice编辑器\" style=\"margin-top: 30px;margin-bottom: 15px;font-weight: bold;font-size: 20px;\"><span style=\"display: none;\"></span>3.2 配置密钥<span style=\"display: none;\"></span></h3>\n" +
                 "  <p data-tool=\"mdnice编辑器\" style=\"padding-top: 8px;padding-bottom: 8px;line-height: 26px;\">在<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">http://&lt;jenkins-url&gt;/user/&lt;userid&gt;/configure</code>页面的<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">SSH</code>公钥字段中添加用户的<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">SSH</code>公钥，这个公钥在我们能够和<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">Jenkins Server</code>进行<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">ssh</code>通信的机器上生成即可，生成后在当前用户的设置界面下进行添加</p>\n" +
-                "  <img data-ratio=\"0.5678092399403875\" data-src=\"https://file.codingstyle.cn/article/photo/2021/aed0ebbc-7c71-4c76-94f6-0b68111472d1.png\" src=\"https://file.codingstyle.cn/article/photo/2021/aed0ebbc-7c71-4c76-94f6-0b68111472d1.png?wx_fmt=png\" data-type=\"png\" data-w=\"2684\" style=\"display: block; margin-right: auto; margin-left: auto; zoom: 67%; width: 657px !important; height: 374.341px !important;\" _width=\"677px\" class=\"img_loading\" src=\"data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==\" crossorigin=\"anonymous\">\n" +
+                "  <img data-ratio=\"0.5678092399403875\" data-src=\"https://file.codingstyle.cn/article/photo/2021/1.png\" src=\"https://file.codingstyle.cn/article/photo/2021/1.png?wx_fmt=png\" data-type=\"png\" data-w=\"2684\" style=\"display: block; margin-right: auto; margin-left: auto; zoom: 67%; width: 657px !important; height: 374.341px !important;\" _width=\"677px\" class=\"img_loading\" src=\"data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==\" crossorigin=\"anonymous\">\n" +
                 "  <h3 data-tool=\"mdnice编辑器\" style=\"margin-top: 30px;margin-bottom: 15px;font-weight: bold;font-size: 20px;\"><span style=\"display: none;\"></span>3.3 初始化克隆workflowLibs库<span style=\"display: none;\"></span></h3>\n" +
                 "  <p data-tool=\"mdnice编辑器\" style=\"padding-top: 8px;padding-bottom: 8px;line-height: 26px;\">上面的操作完成后，就可以在共享库代码的开发机器(<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">ssh</code>客户端)上进行克隆了</p>\n" +
                 "  <pre data-tool=\"mdnice编辑器\" style=\"margin-top: 10px;margin-bottom: 10px;border-radius: 5px;box-shadow: rgba(0, 0, 0, 0.55) 0px 2px 10px;\"><span style=\"display: block;background: url(&quot;https://mmbiz.qpic.cn/mmbiz_png/Oy8CSKcrQ44Mbs2MZichqVn5wbPjPAQrdRQfeoBbqeXLRV4LfRP5UMTlLUNbTicCKDsINCNKHic3UUn1PK9TvN5HA/640?wx_fmt=png&quot;) 10px 10px / 40px no-repeat rgb(40, 44, 52);height: 30px;width: 100%;margin-bottom: -7px;border-radius: 5px;\"></span><code style=\"overflow-x: auto;padding: 16px;color: #abb2bf;display: -webkit-box;font-family: Operator Mono, Consolas, Monaco, Menlo, monospace;font-size: 12px;-webkit-overflow-scrolling: touch;padding-top: 15px;background: #282c34;border-radius: 5px;\">➜&nbsp;&nbsp;~&nbsp;git&nbsp;clone&nbsp;ssh://ssgeek@192.168.12.82:32222/workflowLibs.gitCloning&nbsp;into&nbsp;'workflowLibs'...warning:&nbsp;You&nbsp;appear&nbsp;to&nbsp;have&nbsp;cloned&nbsp;an&nbsp;empty&nbsp;repository.➜&nbsp;&nbsp;~&nbsp;cd&nbsp;workflowLibs➜&nbsp;&nbsp;workflowLibs&nbsp;git&nbsp;checkout&nbsp;-b&nbsp;masterSwitched&nbsp;to&nbsp;a&nbsp;new&nbsp;branch&nbsp;'master'</code></pre>\n" +
@@ -199,7 +176,7 @@ class SpiderResourceIT {
                 "  <pre data-tool=\"mdnice编辑器\" style=\"margin-top: 10px;margin-bottom: 10px;border-radius: 5px;box-shadow: rgba(0, 0, 0, 0.55) 0px 2px 10px;\"><span style=\"display: block;background: url(&quot;https://mmbiz.qpic.cn/mmbiz_png/Oy8CSKcrQ44Mbs2MZichqVn5wbPjPAQrdRQfeoBbqeXLRV4LfRP5UMTlLUNbTicCKDsINCNKHic3UUn1PK9TvN5HA/640?wx_fmt=png&quot;) 10px 10px / 40px no-repeat rgb(40, 44, 52);height: 30px;width: 100%;margin-bottom: -7px;border-radius: 5px;\"></span><code style=\"overflow-x: auto;padding: 16px;color: #abb2bf;display: -webkit-box;font-family: Operator Mono, Consolas, Monaco, Menlo, monospace;font-size: 12px;-webkit-overflow-scrolling: touch;padding-top: 15px;background: #282c34;border-radius: 5px;\"><span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">/*&nbsp;dingtalk.groovy&nbsp;&nbsp;&nbsp;##################################################&nbsp;&nbsp;&nbsp;#&nbsp;Created&nbsp;by&nbsp;SSgeek&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;&nbsp;&nbsp;#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;&nbsp;&nbsp;#&nbsp;A&nbsp;Part&nbsp;of&nbsp;the&nbsp;Project&nbsp;jenkins&nbsp;workflowLibs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;&nbsp;&nbsp;#&nbsp;https://www.ssgeek.com&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;&nbsp;&nbsp;##################################################*/</span><span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;post步骤</span><span style=\"color: #c678dd;line-height: 26px;\">def</span>&nbsp;dingTalk(BasicEnv,ImageTag,ReleaseMess){&nbsp;&nbsp;&nbsp;&nbsp;wrap([<span style=\"color: #98c379;line-height: 26px;\">$class:</span>&nbsp;<span style=\"color: #98c379;line-height: 26px;\">'BuildUser'</span>]){&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dingTalk&nbsp;(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;机器人&nbsp;id</span><span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;robot:</span>&nbsp;<span style=\"color: #98c379;line-height: 26px;\">'eb5e68bb-1ad7-4638-8008-9d0d1072d319'</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;消息类型</span><span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type:</span>&nbsp;<span style=\"color: #98c379;line-height: 26px;\">'ACTION_CARD'</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;需要&nbsp;@&nbsp;的手机号码</span><span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;at:</span>[],&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;是否&nbsp;@&nbsp;全部</span><span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;atAll:</span>&nbsp;<span style=\"color: #56b6c2;line-height: 26px;\">true</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;消息标题</span><span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;title:</span>&nbsp;<span style=\"color: #98c379;line-height: 26px;\">'生产上线小喇叭'</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;消息内容主体</span><span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text:</span>&nbsp;[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #98c379;line-height: 26px;\">\"[${env.JOB_NAME}](${env.JOB_URL})\\n\"</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #98c379;line-height: 26px;\">'---'</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #98c379;line-height: 26px;\">\"-&nbsp;任务编号：[${env.BUILD_ID}](${env.BUILD_URL})\"</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #98c379;line-height: 26px;\">\"-&nbsp;上线版本：**${ImageTag}**\"</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #98c379;line-height: 26px;\">\"-&nbsp;上线环境：**${BasicEnv}**\"</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;\"-&nbsp;上线结果：**☆${currentBuild.currentResult}☆**\",</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #98c379;line-height: 26px;\">\"-&nbsp;上线结果：**\uD83D\uDC49☆${currentBuild.currentResult}☆\uD83D\uDC48**\"</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #98c379;line-height: 26px;\">\"-&nbsp;上线发起：**${env.BUILD_USER}**\"</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #98c379;line-height: 26px;\">\"-&nbsp;上线描述：**${ReleaseMess}**\"</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #98c379;line-height: 26px;\">\"-&nbsp;持续时间：${currentBuild.durationString}\\n\"</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;],&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;点击消息跳转的&nbsp;URL</span><span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;messageUrl:</span>&nbsp;<span style=\"color: #98c379;line-height: 26px;\">''</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;图片&nbsp;URL</span><span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;picUrl:</span><span style=\"color: #98c379;line-height: 26px;\">''</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;单个按钮的方案，设置此项和&nbsp;singleUrl&nbsp;后&nbsp;btns&nbsp;无效</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;singleTitle:'',</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;singleUrl:'',</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;自定义按钮组</span><span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;btns:</span>&nbsp;[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;title:</span>&nbsp;<span style=\"color: #98c379;line-height: 26px;\">'发布日志'</span>,<span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;actionUrl:</span>&nbsp;<span style=\"color: #98c379;line-height: 26px;\">\"${env.BUILD_URL}/console\"</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;],&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;title:</span>&nbsp;<span style=\"color: #98c379;line-height: 26px;\">'控制台'</span>,<span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;actionUrl:</span>&nbsp;<span style=\"color: #98c379;line-height: 26px;\">\"https://jenkins.ssgeek.com\"</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;],&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;按钮的排列方式：horizotal水平排列H、vertical垂直排列V</span><span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;btnLayout:</span>&nbsp;<span style=\"color: #98c379;line-height: 26px;\">'H'</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: #5c6370;font-style: italic;line-height: 26px;\">//&nbsp;是否隐藏发消息者头像</span><span style=\"color: #61aeee;line-height: 26px;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hideAvatar:</span>&nbsp;<span style=\"color: #56b6c2;line-height: 26px;\">true</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)&nbsp;&nbsp;&nbsp;&nbsp;}}</code></pre>\n" +
                 "  <h3 data-tool=\"mdnice编辑器\" style=\"margin-top: 30px;margin-bottom: 15px;font-weight: bold;font-size: 20px;\"><span style=\"display: none;\"></span>4.2 插件配置<span style=\"display: none;\"></span></h3>\n" +
                 "  <p data-tool=\"mdnice编辑器\" style=\"padding-top: 8px;padding-bottom: 8px;line-height: 26px;\">插件需要在<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">Jenkins</code>中配置钉钉机器人的<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">hook</code>地址，配置完成会生成一个<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">id</code>，和上面方法中的<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">robot</code>对应</p>\n" +
-                "  <img data-ratio=\"0.590531561461794\" data-src=\"https://file.codingstyle.cn/article/photo/2021/49b9a843-79d4-428e-8dc2-93596852913a.png\" src=\"https://file.codingstyle.cn/article/photo/2021/49b9a843-79d4-428e-8dc2-93596852913a.png?wx_fmt=png\" data-type=\"png\" data-w=\"2408\" style=\"display: block; margin-right: auto; margin-left: auto; zoom: 67%; width: 657px !important; height: 389.202px !important;\" _width=\"677px\" class=\"img_loading\" src=\"data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==\" crossorigin=\"anonymous\">\n" +
+                "  <img data-ratio=\"0.590531561461794\" data-src=\"https://file.codingstyle.cn/article/photo/2021/1.png\" src=\"https://file.codingstyle.cn/article/photo/2021/1.png?wx_fmt=png\" data-type=\"png\" data-w=\"2408\" style=\"display: block; margin-right: auto; margin-left: auto; zoom: 67%; width: 657px !important; height: 389.202px !important;\" _width=\"677px\" class=\"img_loading\" src=\"data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==\" crossorigin=\"anonymous\">\n" +
                 "  <h3 data-tool=\"mdnice编辑器\" style=\"margin-top: 30px;margin-bottom: 15px;font-weight: bold;font-size: 20px;\"><span style=\"display: none;\"></span>4.3 使用<span style=\"display: none;\"></span></h3>\n" +
                 "  <p data-tool=\"mdnice编辑器\" style=\"padding-top: 8px;padding-bottom: 8px;line-height: 26px;\">在<code style=\"font-size: 14px;overflow-wrap: break-word;padding: 2px 4px;border-radius: 4px;margin-right: 2px;margin-left: 2px;color: rgb(30, 107, 184);background-color: rgba(27, 31, 35, 0.05);font-family: &quot;Operator Mono&quot;, Consolas, Monaco, Menlo, monospace;word-break: break-all;\">pipeline</code>中使用，部分内容如下</p>\n" +
                 "  <pre data-tool=\"mdnice编辑器\" style=\"margin-top: 10px;margin-bottom: 10px;border-radius: 5px;box-shadow: rgba(0, 0, 0, 0.55) 0px 2px 10px;\"><span style=\"display: block;background: url(&quot;https://mmbiz.qpic.cn/mmbiz_png/Oy8CSKcrQ44Mbs2MZichqVn5wbPjPAQrdRQfeoBbqeXLRV4LfRP5UMTlLUNbTicCKDsINCNKHic3UUn1PK9TvN5HA/640?wx_fmt=png&quot;) 10px 10px / 40px no-repeat rgb(40, 44, 52);height: 30px;width: 100%;margin-bottom: -7px;border-radius: 5px;\"></span><code style=\"overflow-x: auto;padding: 16px;color: #abb2bf;display: -webkit-box;font-family: Operator Mono, Consolas, Monaco, Menlo, monospace;font-size: 12px;-webkit-overflow-scrolling: touch;padding-top: 15px;background: #282c34;border-radius: 5px;\">post{&nbsp;&nbsp;always{&nbsp;&nbsp;&nbsp;&nbsp;script{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dingtalk.dingTalk(BasicEnv,ImageTag,ReleaseMess)&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;}}</code></pre>\n" +
@@ -214,13 +191,7 @@ class SpiderResourceIT {
                 "</div>";
     }
 
-    @NotNull
     private String expectedJianshuContent() {
-        return originalJianshuContent();
-    }
-
-    @NotNull
-    private String originalJianshuContent() {
         return "<article class=\"_2rhmJa\">\n" +
                 " <p>参数过多的方法，该如何改善？</p> \n" +
                 " <br> \n" +
@@ -320,4 +291,5 @@ class SpiderResourceIT {
                 " <p>当然，以上仅仅是进行改进的开始。实际中往往会发现并非所有的参数都应该属于同一对象。也可能被重构的方法本身需要拆分成不同的部分。需要结合其它方法进行更深入的重构。</p> \n" +
                 "</article>";
     }
+
 }

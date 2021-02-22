@@ -9,7 +9,7 @@ public class FileNameGenerator {
     public FileNameGenerator() {
     }
 
-    String createFileName(String imageType) {
+    public String createFileName(String imageType) {
         return UUID.randomUUID().toString() + "." + imageType;
     }
 }

@@ -1,7 +1,6 @@
 package cn.codingstyle.spider.crawl.jianshu;
 
 import cn.codingstyle.spider.crawl.CrawlOriginalData;
-import cn.codingstyle.spider.crawl.weixinmp.WeixinMpProcessor;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -16,7 +15,6 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 
 public class JianShuProcessorTest {

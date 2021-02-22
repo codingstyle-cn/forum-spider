@@ -26,7 +26,7 @@ public class UpYunHelper {
 
     public void uploadFile(String currentYear, String url, String fileName) {
         try {
-            boolean result = upload(currentYear, url, fileName);
+            boolean result = upload(currentYear, addProtocolPrefix(url), fileName);
             log.info("上传又拍云结果:{}", result);
         } catch (Exception e) {
             String errorMsg = format("上传又拍云失败: %s, url: %s", e.getMessage(), url);
@@ -35,9 +35,14 @@ public class UpYunHelper {
         }
     }
 
+    private String addProtocolPrefix(String url) {
+        return String.format("https:%s", url);
+    }
+
     private boolean upload(String currentYear, String url, String fileName) throws Exception {
-        File file = fileUtil.downloadFile(url, fileName);
-        boolean result = upload(file, "/article/photo/" + currentYear + "/" + fileName);
+        String realFileName = fileName.substring(fileName.lastIndexOf("."));
+        File file = fileUtil.downloadFile(url, realFileName);
+        boolean result = upload(file, "/article/photo/" + currentYear + "/" + realFileName);
         file.delete();
         return result;
     }
@@ -45,9 +50,9 @@ public class UpYunHelper {
     private boolean upload(File file, String uploadFilePath) throws IOException, UpException {
         log.info("又拍云账号:\n{}", JSON.toJSONString(upYunConfig));
         UpYun upyun = new UpYun(
-            upYunConfig.getBucketName(),
-            upYunConfig.getUsername(),
-            upYunConfig.getPassword());
+                upYunConfig.getBucketName(),
+                upYunConfig.getUsername(),
+                upYunConfig.getPassword());
         // 可选属性1，是否开启 debug 模式，默认不开启
         upyun.setDebug(false);
         // 可选属性2，超时时间，默认 30s

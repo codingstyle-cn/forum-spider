@@ -1,6 +1,7 @@
 package cn.codingstyle.spider;
 
 import cn.codingstyle.spider.application.CreateCrawlCommand;
+import cn.codingstyle.spider.application.UpYunHelper;
 import cn.codingstyle.spider.domain.CrawlRecordDetail;
 import cn.codingstyle.spider.domain.CrawlRecordDetailRepository;
 import cn.codingstyle.web.rest.TestUtil;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,6 +33,8 @@ class SpiderResourceIT {
 
     @Autowired
     MockMvc mockMvc;
+    @MockBean
+    UpYunHelper upYunHelper;
 
     @Autowired
     private CrawlRecordDetailRepository crawlRecordDetailRepository;
@@ -38,7 +42,7 @@ class SpiderResourceIT {
     @Test
     void should_crawl_multiple_platforms() throws Exception {
         CreateCrawlCommand command = new CreateCrawlCommand();
-        command.setUrls("https://www.jianshu.com/p/807997493eeb\nhttps://mp.weixin.qq.com/s/NfJ_EafbZPyPLZEeHz0Dkw");
+        command.setUrls("https://www.jianshu.com/p/e1810fdf5d11\nhttps://mp.weixin.qq.com/s/NfJ_EafbZPyPLZEeHz0Dkw");
         mockMvc.perform(post("/api/spider/crawl")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestUtil.convertObjectToJsonBytes(command))
@@ -52,13 +56,13 @@ class SpiderResourceIT {
         List<CrawlRecordDetail> articles = crawlRecordDetailRepository.findAll();
         assertThat(articles.size()).isEqualTo(2);
         List<String> urls = articles.stream().map(CrawlRecordDetail::getOriginalUrl).collect(Collectors.toList());
-        assertThat(urls).contains("https://www.jianshu.com/p/807997493eeb");
+        assertThat(urls).contains("https://www.jianshu.com/p/e1810fdf5d11");
         assertThat(urls).contains("https://mp.weixin.qq.com/s/NfJ_EafbZPyPLZEeHz0Dkw");
 
-        CrawlRecordDetail jianshuArticle = articles.stream().filter(article -> article.getOriginalUrl().equals("https://www.jianshu.com/p/807997493eeb")).findFirst().get();
-        assertThat(jianshuArticle.getAuthor()).isEqualTo("刘光聪");
-        assertThat(jianshuArticle.getSubject()).isEqualTo("开发者测试：gtest与cctest");
-        assertThat(removeImg(jianshuArticle.getContent())).isEqualTo(expectedJianshuContent());
+        CrawlRecordDetail jianshuArticle = articles.stream().filter(article -> article.getOriginalUrl().equals("https://www.jianshu.com/p/e1810fdf5d11")).findFirst().get();
+        assertThat(jianshuArticle.getAuthor()).isEqualTo("武可");
+        assertThat(jianshuArticle.getSubject()).isEqualTo("改善参数过多的方法");
+        assertThat(jianshuArticle.getContent()).isEqualTo(expectedJianshuContent());
 
         CrawlRecordDetail weixinMpArticle = articles.stream().filter(article -> article.getOriginalUrl().equals("https://mp.weixin.qq.com/s/NfJ_EafbZPyPLZEeHz0Dkw")).findFirst().get();
         assertThat(weixinMpArticle.getAuthor()).isEqualTo("<span class=\"rich_media_meta rich_media_meta_text\"> SSgeek </span>");
@@ -212,200 +216,108 @@ class SpiderResourceIT {
 
     @NotNull
     private String expectedJianshuContent() {
-        return removeImg(originalJianshuContent());
+        return originalJianshuContent();
     }
 
     @NotNull
     private String originalJianshuContent() {
         return "<article class=\"_2rhmJa\">\n" +
-                " <p>xUnit表示一组单元测试框架集合，其基本思想起源于SUnit。SUnit由极限编程之父Kent Beck使用SmallTalk设计实现。随后，Kent Beck与Erich Gamma结对编程实现了JUnit，这是一个Java实现的移植版本。</p> \n" +
-                " <p>JUnit随着Java社区不断壮大，及其敏捷软件开发思潮的涌现，当前JUnit已经成为Java程序员最常使用的框架之一。当然，JUnit也在不断地演进，截止目前JUnit5已然面世，重焕青春。</p> \n" +
-                " <p>JUnit之后，可谓百家争鸣。各个语言社区都诞生了自家优秀的xUnit实现，包括基于JVM实现的各种高级编程语言。它们基本继承或发扬了xUnit基本架构与方法论，部分后起之秀在用户界面友好性方面取得极大的改进和提升。例如，我所偏爱的Spock, ScalaTest框架。</p> \n" +
-                " <p>在C/C++领域，xUnit框架也是百家争鸣，这里给大家介绍两款测试框架。</p> \n" +
-                " <h2>Google Test</h2> \n" +
-                " <p>Google Test使用C++语言实现，功能强大、系统稳定、移植性良好、支持自动发现，相对于C++社区其它xUnit实现，可谓技高一筹，在C++社区占据主导地位。</p> \n" +
-                " <div class=\"_2Uzcx_\">\n" +
-                "  <button class=\"VJbwyy\" type=\"button\" aria-label=\"复制代码\"><i aria-label=\"icon: copy\" class=\"anticon anticon-copy\">\n" +
-                "    <svg viewbox=\"64 64 896 896\" focusable=\"false\" class=\"\" data-icon=\"copy\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\">\n" +
-                "     <path d=\"M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z\"></path>\n" +
-                "    </svg></i></button>\n" +
-                "  <pre class=\"line-numbers  language-cpp\"><code class=\"cpp  language-cpp\"><span class=\"token macro property\">#<span class=\"token directive keyword\">include</span> <span class=\"token string\">&lt;gtest/gtest.h&gt;</span></span>\n" +
-                "<span class=\"token macro property\">#<span class=\"token directive keyword\">include</span> <span class=\"token string\">&lt;stack&gt;</span></span>\n" +
-                "\n" +
-                "<span class=\"token keyword\">namespace</span> <span class=\"token punctuation\">{</span>\n" +
-                "  <span class=\"token keyword\">struct</span> <span class=\"token class-name\">StackSpec</span> <span class=\"token operator\">:</span> testing<span class=\"token operator\">::</span>Test <span class=\"token punctuation\">{</span>\n" +
-                "  <span class=\"token keyword\">private</span><span class=\"token operator\">:</span>\n" +
-                "    <span class=\"token keyword\">void</span> <span class=\"token function\">SetUp</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span> override <span class=\"token punctuation\">{</span>\n" +
-                "      s<span class=\"token punctuation\">.</span><span class=\"token function\">push</span><span class=\"token punctuation\">(</span><span class=\"token number\">1</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "      s<span class=\"token punctuation\">.</span><span class=\"token function\">push</span><span class=\"token punctuation\">(</span><span class=\"token number\">2</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "    <span class=\"token punctuation\">}</span>\n" +
-                "\n" +
-                "  <span class=\"token keyword\">protected</span><span class=\"token operator\">:</span>\n" +
-                "    std<span class=\"token operator\">::</span>stack<span class=\"token operator\">&lt;</span><span class=\"token keyword\">int</span><span class=\"token operator\">&gt;</span> s<span class=\"token punctuation\">;</span>\n" +
-                "  <span class=\"token punctuation\">}</span><span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span>\n" +
-                "\n" +
-                "<span class=\"token function\">TEST_F</span><span class=\"token punctuation\">(</span>StackSpec<span class=\"token punctuation\">,</span> apply_pop_0_time<span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "  <span class=\"token function\">ASSERT_EQ</span><span class=\"token punctuation\">(</span><span class=\"token number\">2</span><span class=\"token punctuation\">,</span> s<span class=\"token punctuation\">.</span><span class=\"token function\">top</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span>\n" +
-                "\n" +
-                "<span class=\"token function\">TEST_F</span><span class=\"token punctuation\">(</span>StackSpec<span class=\"token punctuation\">,</span> apply_pop_1_time<span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "  s<span class=\"token punctuation\">.</span><span class=\"token function\">pop</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "  <span class=\"token function\">ASSERT_EQ</span><span class=\"token punctuation\">(</span><span class=\"token number\">1</span><span class=\"token punctuation\">,</span> s<span class=\"token punctuation\">.</span><span class=\"token function\">top</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span>\n" +
-                "\n" +
-                "<span class=\"token function\">TEST_F</span><span class=\"token punctuation\">(</span>StackSpec<span class=\"token punctuation\">,</span> apply_pop_2_time<span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "  s<span class=\"token punctuation\">.</span><span class=\"token function\">pop</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "  s<span class=\"token punctuation\">.</span><span class=\"token function\">pop</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "  <span class=\"token function\">ASSERT_TRUE</span><span class=\"token punctuation\">(</span>s<span class=\"token punctuation\">.</span><span class=\"token function\">empty</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span>\n" +
-                "<span aria-hidden=\"true\" class=\"line-numbers-rows\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>\n" +
+                " <p>参数过多的方法，该如何改善？</p> \n" +
+                " <br> \n" +
+                " <div class=\"image-package\"> \n" +
+                "  <div class=\"image-container\" style=\"max-width: 700px; max-height: 544px; background-color: transparent;\"> \n" +
+                "   <div class=\"image-container-fill\" style=\"padding-bottom: 56.67%;\"></div> \n" +
+                "   <div class=\"image-view\" data-width=\"960\" data-height=\"544\">\n" +
+                "    <img src=\"https://file.codingstyle.cn/article/photo/2021/2453618-74d25308997ab385.png\" data-original-width=\"960\" data-original-height=\"544\" data-original-format=\"image/png\" data-original-filesize=\"761869\" data-image-index=\"0\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"\" src=\"https://file.codingstyle.cn/article/photo/2021/2453618-74d25308997ab385.png?imageMogr2/auto-orient/strip|imageView2/2/w/960/format/webp\">\n" +
+                "   </div> \n" +
+                "  </div> \n" +
+                "   \n" +
                 " </div> \n" +
-                " <p>但是，Google Test 也存在一些不尽人意的细节之处。</p> \n" +
-                " <h3>命名</h3> \n" +
-                " <p>用例名字必须遵循标识符的严格命名格则，否则编译不能通过。一方面，新增或修改用例时，输入长串下划线极度枯燥乏味；另一方面，极大地降低了用例的可读性。</p> \n" +
-                " <p>当用例命名成为程序员的一种负担，其质量将大大折扣。但是，测试用例是系统行为描述最重要的“活文档”，它与被测系统的代码一并入库，并保持同步。如果，测试用例命名质量不高，\"Test as Document\"的愿景只能沦为痴人说梦了。</p> \n" +
-                " <div class=\"_2Uzcx_\">\n" +
-                "  <button class=\"VJbwyy\" type=\"button\" aria-label=\"复制代码\"><i aria-label=\"icon: copy\" class=\"anticon anticon-copy\">\n" +
-                "    <svg viewbox=\"64 64 896 896\" focusable=\"false\" class=\"\" data-icon=\"copy\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\">\n" +
-                "     <path d=\"M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z\"></path>\n" +
-                "    </svg></i></button>\n" +
-                "  <pre class=\"line-numbers  language-cpp\"><code class=\"cpp  language-cpp\"><span class=\"token comment\">// Bad Smell: test cases must be named using c++ identifier.</span>\n" +
-                "<span class=\"token function\">TEST_F</span><span class=\"token punctuation\">(</span>RobotCleanerTest<span class=\"token punctuation\">,</span> at_beginning_the_robot_should_be_in_at_the_initial_position<span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "  <span class=\"token function\">ASSERT_EQ</span><span class=\"token punctuation\">(</span><span class=\"token function\">Position</span><span class=\"token punctuation\">(</span><span class=\"token number\">0</span><span class=\"token punctuation\">,</span> <span class=\"token number\">0</span><span class=\"token punctuation\">,</span> NORTH<span class=\"token punctuation\">)</span><span class=\"token punctuation\">,</span> robot<span class=\"token punctuation\">.</span><span class=\"token function\">getPosition</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span>\n" +
-                "<span aria-hidden=\"true\" class=\"line-numbers-rows\"><span></span><span></span><span></span><span></span></span></code></pre>\n" +
-                " </div> \n" +
-                " <h3>重复</h3> \n" +
-                " <p>RobotCleanerTest扮演测试装置，但与每个测试用例(TEST_F)分离实现，每个用例不得不一次次地重复RobotCleanerTest。</p> \n" +
-                " <p>测试装置与测试用例相分离，破坏了它们之间的内聚性。当然，C++程序员忍受类与成员函数分离定义而引入的重复设计，早已司空见惯矣。一般地，在C++编译模型中，在头文件中定义类，实现文件中定义成员函数。但是，此处测试装置与测试用例往往都在同一个实现文件内，分离定义引入重复设计，无畏地给用户增加了不必要的负担。</p> \n" +
-                " <div class=\"_2Uzcx_\">\n" +
-                "  <button class=\"VJbwyy\" type=\"button\" aria-label=\"复制代码\"><i aria-label=\"icon: copy\" class=\"anticon anticon-copy\">\n" +
-                "    <svg viewbox=\"64 64 896 896\" focusable=\"false\" class=\"\" data-icon=\"copy\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\">\n" +
-                "     <path d=\"M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z\"></path>\n" +
-                "    </svg></i></button>\n" +
-                "  <pre class=\"line-numbers  language-cpp\"><code class=\"  language-cpp\"><span class=\"token comment\">// Bad Smell: you must duplicate fixture name for each test case.</span>\n" +
-                "<span class=\"token keyword\">struct</span> <span class=\"token class-name\">RobotCleanerTest</span> <span class=\"token operator\">:</span> testing<span class=\"token operator\">::</span>Test <span class=\"token punctuation\">{</span>\n" +
-                "<span class=\"token keyword\">protected</span><span class=\"token operator\">:</span>\n" +
-                "  RobotCleaner robot<span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span><span class=\"token punctuation\">;</span>\n" +
-                " \n" +
-                "<span class=\"token function\">TEST_F</span><span class=\"token punctuation\">(</span>RobotCleanerTest<span class=\"token punctuation\">,</span> at_beginning_the_robot_should_be_in_at_the_initial_position<span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "  <span class=\"token function\">ASSERT_EQ</span><span class=\"token punctuation\">(</span><span class=\"token function\">Position</span><span class=\"token punctuation\">(</span><span class=\"token number\">0</span><span class=\"token punctuation\">,</span> <span class=\"token number\">0</span><span class=\"token punctuation\">,</span> NORTH<span class=\"token punctuation\">)</span><span class=\"token punctuation\">,</span> robot<span class=\"token punctuation\">.</span><span class=\"token function\">getPosition</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span>\n" +
-                " \n" +
-                "<span class=\"token function\">TEST_F</span><span class=\"token punctuation\">(</span>RobotCleanerTest<span class=\"token punctuation\">,</span> robot_should_be_face_west_after_turn_left<span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "  robot<span class=\"token punctuation\">.</span><span class=\"token function\">turnLeft</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "  <span class=\"token function\">ASSERT_EQ</span><span class=\"token punctuation\">(</span><span class=\"token function\">Position</span><span class=\"token punctuation\">(</span><span class=\"token number\">0</span><span class=\"token punctuation\">,</span> <span class=\"token number\">0</span><span class=\"token punctuation\">,</span> WEST<span class=\"token punctuation\">)</span><span class=\"token punctuation\">,</span> robot<span class=\"token punctuation\">.</span><span class=\"token function\">getPosition</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span>\n" +
-                "<span aria-hidden=\"true\" class=\"line-numbers-rows\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>\n" +
-                " </div> \n" +
-                " <h3>隐晦</h3> \n" +
-                " <p>测试装置与测试用例相分离，本应该被直观地理解为类与成员函数之间的关系。理论上，测试用例<code>TEST_F</code>与测试装置应该在同一个类域之中，<code>TEST_F</code>能够直接获取到测试装置的私有成员。例如，RobotCleanerTest::robot。</p> \n" +
-                " <p>不幸的是，RobotCleanerTest与TEST_F存在隐晦的继承关系。如果用户不了解Google Test的实现机制，就根本无法理解成员变量RobotCleanerTest::robot为什么被声明为protected，而不是private。</p> \n" +
-                " <div class=\"_2Uzcx_\">\n" +
-                "  <button class=\"VJbwyy\" type=\"button\" aria-label=\"复制代码\"><i aria-label=\"icon: copy\" class=\"anticon anticon-copy\">\n" +
-                "    <svg viewbox=\"64 64 896 896\" focusable=\"false\" class=\"\" data-icon=\"copy\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\">\n" +
-                "     <path d=\"M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z\"></path>\n" +
-                "    </svg></i></button>\n" +
-                "  <pre class=\"line-numbers  language-cpp\"><code class=\"cpp  language-cpp\"><span class=\"token keyword\">struct</span> <span class=\"token class-name\">RobotCleanerTest</span> <span class=\"token operator\">:</span> testing<span class=\"token operator\">::</span>Test <span class=\"token punctuation\">{</span>\n" +
-                "<span class=\"token keyword\">private</span><span class=\"token operator\">:</span> <span class=\"token comment\">// should be protected</span>\n" +
-                "  RobotCleaner robot<span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span><span class=\"token punctuation\">;</span>\n" +
-                " \n" +
-                "<span class=\"token function\">TEST_F</span><span class=\"token punctuation\">(</span>RobotCleanerTest<span class=\"token punctuation\">,</span> at_beginning_the_robot_should_be_in_at_the_initial_position<span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "  <span class=\"token comment\">// Error: 'RobotCleaner RobotCleanerTest::robot' is private within this context.</span>\n" +
-                "  <span class=\"token function\">ASSERT_EQ</span><span class=\"token punctuation\">(</span><span class=\"token function\">Position</span><span class=\"token punctuation\">(</span><span class=\"token number\">0</span><span class=\"token punctuation\">,</span> <span class=\"token number\">0</span><span class=\"token punctuation\">,</span> NORTH<span class=\"token punctuation\">)</span><span class=\"token punctuation\">,</span> robot<span class=\"token punctuation\">.</span><span class=\"token function\">getPosition</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span>\n" +
-                "<span aria-hidden=\"true\" class=\"line-numbers-rows\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>\n" +
-                " </div> \n" +
-                " <h3>误用</h3> \n" +
-                " <p>用户也需要关注<code>TEST</code>， <code>TEST_F</code>之间微妙的差异，并区分两者之间的使用场景，无疑增加了用户的心智包袱。例如，用户在此处本应使用<code>TEST_F</code>，而误用为<code>TEST</code>。这个例子较为幸运，编译器提示<code>robot</code>变量未定义，编译是失败的。但是，在特殊场景可能会逃出编译时检查，导致运行时用例失败。</p> \n" +
-                " <div class=\"_2Uzcx_\">\n" +
-                "  <button class=\"VJbwyy\" type=\"button\" aria-label=\"复制代码\"><i aria-label=\"icon: copy\" class=\"anticon anticon-copy\">\n" +
-                "    <svg viewbox=\"64 64 896 896\" focusable=\"false\" class=\"\" data-icon=\"copy\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\">\n" +
-                "     <path d=\"M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z\"></path>\n" +
-                "    </svg></i></button>\n" +
-                "  <pre class=\"line-numbers  language-cpp\"><code class=\"cpp  language-cpp\"><span class=\"token keyword\">struct</span> <span class=\"token class-name\">RobotCleanerTest</span> <span class=\"token operator\">:</span> testing<span class=\"token operator\">::</span>Test <span class=\"token punctuation\">{</span>\n" +
-                "<span class=\"token keyword\">protected</span><span class=\"token operator\">:</span>\n" +
-                "  RobotCleaner robot<span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span><span class=\"token punctuation\">;</span>\n" +
-                "\n" +
-                "<span class=\"token comment\">// should be TEST_F</span>\n" +
-                "<span class=\"token function\">TEST</span><span class=\"token punctuation\">(</span>RobotCleanerTest<span class=\"token punctuation\">,</span> at_beginning_the_robot_should_be_in_at_the_initial_position<span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "  <span class=\"token comment\">// Error: 'robot' was not declared in this scope.</span>\n" +
-                "  <span class=\"token function\">ASSERT_EQ</span><span class=\"token punctuation\">(</span><span class=\"token function\">Position</span><span class=\"token punctuation\">(</span><span class=\"token number\">0</span><span class=\"token punctuation\">,</span> <span class=\"token number\">0</span><span class=\"token punctuation\">,</span> NORTH<span class=\"token punctuation\">)</span><span class=\"token punctuation\">,</span> @robot@<span class=\"token punctuation\">.</span><span class=\"token function\">getPosition</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span>\n" +
-                "<span aria-hidden=\"true\" class=\"line-numbers-rows\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>\n" +
-                " </div> \n" +
-                " <h3>大小写</h3> \n" +
-                " <p>覆写<code>Test::SetUp</code>时，经常将其错误地写为<code>setup, setUp, Setup</code>，不经意地大小写错误可能导致运行时测试用例执行失败。当然，如果坚持使用<code>override</code>关键字，可以提高编译时安全性，将错误拦截至编译期。</p> \n" +
-                " <div class=\"_2Uzcx_\">\n" +
-                "  <button class=\"VJbwyy\" type=\"button\" aria-label=\"复制代码\"><i aria-label=\"icon: copy\" class=\"anticon anticon-copy\">\n" +
-                "    <svg viewbox=\"64 64 896 896\" focusable=\"false\" class=\"\" data-icon=\"copy\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\">\n" +
-                "     <path d=\"M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z\"></path>\n" +
-                "    </svg></i></button>\n" +
-                "  <pre class=\"line-numbers  language-cpp\"><code class=\"cpp  language-cpp\"><span class=\"token keyword\">struct</span> <span class=\"token class-name\">RobotCleanerTest</span> <span class=\"token operator\">:</span> testing<span class=\"token operator\">::</span>Test <span class=\"token punctuation\">{</span>\n" +
-                "<span class=\"token keyword\">private</span><span class=\"token operator\">:</span>\n" +
-                "  <span class=\"token comment\">// Error: should override SetUp, not Setup/setup/setUp.</span>\n" +
-                "  <span class=\"token keyword\">void</span> <span class=\"token function\">Setup</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "    robot<span class=\"token punctuation\">.</span><span class=\"token function\">reset</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "  <span class=\"token punctuation\">}</span>\n" +
-                " \n" +
-                "<span class=\"token keyword\">protected</span><span class=\"token operator\">:</span>\n" +
-                "  RobotCleaner robot<span class=\"token punctuation\">;</span>\n" +
-                "<span class=\"token punctuation\">}</span><span class=\"token punctuation\">;</span>\n" +
-                "<span aria-hidden=\"true\" class=\"line-numbers-rows\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>\n" +
-                " </div> \n" +
-                " <h2>cctest</h2> \n" +
-                " <p>cctest完成类似Google Test的基本功能特性。相对于Google Test，cctest定义了一套更人性化的DSL，改善用例描述的表达力。</p> \n" +
+                " <h3>问题</h3> \n" +
+                " <p>按照《Clean Code》中的标准，方法参数超过3个就已经是“过多”了。<br> 参数多带来的问题：</p> \n" +
                 " <ul> \n" +
-                "  <li>使用字符串描述用例，改善用例的表达力；</li> \n" +
-                "  <li>在同一个类域内，使得测试用例与测试装置之间的关系更加内聚；</li> \n" +
-                "  <li>避免<code>setup/setUp/SetUp</code>大小写混用而引发错误。</li> \n" +
+                "  <li>首先是调用的地方难以理解，特别是多个参数是同一类型的时候。不仅调用时要小心对应每个参数的位置。在方法参数数目变动时，更有造成bug的隐患。</li> \n" +
+                "  <li>过多的参数也体现出方法责任过多，可能缺乏内聚的问题。</li> \n" +
                 " </ul> \n" +
+                " <p>这个问题可以用简单的重构入手进行改进。</p> \n" +
+                " <h3>示例代码</h3> \n" +
+                " <p>下面示例的重构代码来源于<br> <a href=\"https://github.com/xpmatteo/birthday-greetings-kata\" target=\"_blank\" rel=\"nofollow\">https://github.com/xpmatteo/birthday-greetings-kata</a></p> \n" +
                 " <div class=\"_2Uzcx_\">\n" +
                 "  <button class=\"VJbwyy\" type=\"button\" aria-label=\"复制代码\"><i aria-label=\"icon: copy\" class=\"anticon anticon-copy\">\n" +
                 "    <svg viewbox=\"64 64 896 896\" focusable=\"false\" class=\"\" data-icon=\"copy\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\">\n" +
                 "     <path d=\"M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z\"></path>\n" +
                 "    </svg></i></button>\n" +
-                "  <pre class=\"line-numbers  language-cpp\"><code class=\"cpp  language-cpp\"><span class=\"token macro property\">#<span class=\"token directive keyword\">include</span> <span class=\"token string\">\"cctest/cctest.h\"</span></span>\n" +
-                "<span class=\"token macro property\">#<span class=\"token directive keyword\">include</span> <span class=\"token string\">&lt;stack&gt;</span></span>\n" +
+                "  <pre class=\"line-numbers  language-java\"><code class=\"java  language-java\"><span class=\"token keyword\">public</span> <span class=\"token keyword\">void</span> <span class=\"token function\">sendGreetings</span><span class=\"token punctuation\">(</span><span class=\"token class-name\">String</span> fileName<span class=\"token punctuation\">,</span> <span class=\"token class-name\">XDate</span> xDate<span class=\"token punctuation\">,</span> <span class=\"token class-name\">String</span> smtpHost<span class=\"token punctuation\">,</span> <span class=\"token keyword\">int</span> smtpPort<span class=\"token punctuation\">)</span> <span class=\"token keyword\">throws</span> <span class=\"token class-name\">IOException</span><span class=\"token punctuation\">,</span> <span class=\"token class-name\">ParseException</span><span class=\"token punctuation\">,</span> <span class=\"token class-name\">AddressException</span><span class=\"token punctuation\">,</span> <span class=\"token class-name\">MessagingException</span> <span class=\"token punctuation\">{</span>\n" +
+                "        <span class=\"token punctuation\">.</span><span class=\"token punctuation\">.</span><span class=\"token punctuation\">.</span>\n" +
+                "        <span class=\"token keyword\">if</span> <span class=\"token punctuation\">(</span>employee<span class=\"token punctuation\">.</span><span class=\"token function\">isBirthday</span><span class=\"token punctuation\">(</span>xDate<span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
+                "            <span class=\"token class-name\">String</span> recipient <span class=\"token operator\">=</span> employee<span class=\"token punctuation\">.</span><span class=\"token function\">getEmail</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
+                "            <span class=\"token class-name\">String</span> body <span class=\"token operator\">=</span> <span class=\"token string\">\"Happy Birthday, dear %NAME%\"</span><span class=\"token punctuation\">.</span><span class=\"token function\">replace</span><span class=\"token punctuation\">(</span><span class=\"token string\">\"%NAME%\"</span><span class=\"token punctuation\">,</span> employee<span class=\"token punctuation\">.</span><span class=\"token function\">getFirstName</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
+                "            <span class=\"token class-name\">String</span> subject <span class=\"token operator\">=</span> <span class=\"token string\">\"Happy Birthday!\"</span><span class=\"token punctuation\">;</span>\n" +
+                "            <span class=\"token function\">sendMessage</span><span class=\"token punctuation\">(</span>smtpHost<span class=\"token punctuation\">,</span> smtpPort<span class=\"token punctuation\">,</span> <span class=\"token string\">\"sender@here.com\"</span><span class=\"token punctuation\">,</span> subject<span class=\"token punctuation\">,</span> body<span class=\"token punctuation\">,</span> recipient<span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
+                "        <span class=\"token punctuation\">}</span>\n" +
+                "    <span class=\"token punctuation\">}</span>\n" +
+                "<span class=\"token punctuation\">}</span>\n" +
                 "\n" +
-                "<span class=\"token function\">FIXTURE</span><span class=\"token punctuation\">(</span>StackSpec<span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "  std<span class=\"token operator\">::</span>stack<span class=\"token operator\">&lt;</span><span class=\"token keyword\">int</span><span class=\"token operator\">&gt;</span> v<span class=\"token punctuation\">;</span>   \n" +
+                "<span class=\"token keyword\">private</span> <span class=\"token keyword\">void</span> <span class=\"token function\">sendMessage</span><span class=\"token punctuation\">(</span><span class=\"token class-name\">String</span> smtpHost<span class=\"token punctuation\">,</span> <span class=\"token keyword\">int</span> smtpPort<span class=\"token punctuation\">,</span> <span class=\"token class-name\">String</span> sender<span class=\"token punctuation\">,</span> <span class=\"token class-name\">String</span> subject<span class=\"token punctuation\">,</span> <span class=\"token class-name\">String</span> body<span class=\"token punctuation\">,</span> <span class=\"token class-name\">String</span> recipient<span class=\"token punctuation\">)</span> <span class=\"token keyword\">throws</span> <span class=\"token class-name\">AddressException</span><span class=\"token punctuation\">,</span> <span class=\"token class-name\">MessagingException</span> <span class=\"token punctuation\">{</span>\n" +
+                "    <span class=\"token comment\">// Create a mail session</span>\n" +
+                "    java<span class=\"token punctuation\">.</span>util<span class=\"token punctuation\">.</span><span class=\"token class-name\">Properties</span> props <span class=\"token operator\">=</span> <span class=\"token keyword\">new</span> java<span class=\"token punctuation\">.</span>util<span class=\"token punctuation\">.</span><span class=\"token class-name\">Properties</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
+                "    props<span class=\"token punctuation\">.</span><span class=\"token function\">put</span><span class=\"token punctuation\">(</span><span class=\"token string\">\"mail.smtp.host\"</span><span class=\"token punctuation\">,</span> smtpHost<span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
+                "    props<span class=\"token punctuation\">.</span><span class=\"token function\">put</span><span class=\"token punctuation\">(</span><span class=\"token string\">\"mail.smtp.port\"</span><span class=\"token punctuation\">,</span> <span class=\"token string\">\"\"</span> <span class=\"token operator\">+</span> smtpPort<span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
+                "    <span class=\"token class-name\">Session</span> session <span class=\"token operator\">=</span> <span class=\"token class-name\">Session</span><span class=\"token punctuation\">.</span><span class=\"token function\">getInstance</span><span class=\"token punctuation\">(</span>props<span class=\"token punctuation\">,</span> <span class=\"token keyword\">null</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
                 "\n" +
-                "  SETUP <span class=\"token punctuation\">{</span>\n" +
-                "    v<span class=\"token punctuation\">.</span><span class=\"token function\">push</span><span class=\"token punctuation\">(</span><span class=\"token number\">1</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "    v<span class=\"token punctuation\">.</span><span class=\"token function\">push</span><span class=\"token punctuation\">(</span><span class=\"token number\">2</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "  <span class=\"token punctuation\">}</span>\n" +
+                "    <span class=\"token comment\">// Construct the message</span>\n" +
+                "    <span class=\"token class-name\">Message</span> msg <span class=\"token operator\">=</span> <span class=\"token keyword\">new</span> <span class=\"token class-name\">MimeMessage</span><span class=\"token punctuation\">(</span>session<span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
+                "    msg<span class=\"token punctuation\">.</span><span class=\"token function\">setFrom</span><span class=\"token punctuation\">(</span><span class=\"token keyword\">new</span> <span class=\"token class-name\">InternetAddress</span><span class=\"token punctuation\">(</span>sender<span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
+                "    msg<span class=\"token punctuation\">.</span><span class=\"token function\">setRecipient</span><span class=\"token punctuation\">(</span><span class=\"token class-name\">Message</span><span class=\"token punctuation\">.</span><span class=\"token class-name\">RecipientType</span><span class=\"token punctuation\">.</span>TO<span class=\"token punctuation\">,</span> <span class=\"token keyword\">new</span> <span class=\"token class-name\">InternetAddress</span><span class=\"token punctuation\">(</span>recipient<span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
+                "    msg<span class=\"token punctuation\">.</span><span class=\"token function\">setSubject</span><span class=\"token punctuation\">(</span>subject<span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
+                "    msg<span class=\"token punctuation\">.</span><span class=\"token function\">setText</span><span class=\"token punctuation\">(</span>body<span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
                 "\n" +
-                "  <span class=\"token function\">TEST</span><span class=\"token punctuation\">(</span><span class=\"token string\">\"apply pop: 0 time\"</span><span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "    <span class=\"token function\">ASSERT_EQ</span><span class=\"token punctuation\">(</span><span class=\"token number\">2</span><span class=\"token punctuation\">,</span> v<span class=\"token punctuation\">.</span><span class=\"token function\">top</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "  <span class=\"token punctuation\">}</span>\n" +
-                "\n" +
-                "  <span class=\"token function\">TEST</span><span class=\"token punctuation\">(</span><span class=\"token string\">\"apply pop: 1 time\"</span><span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "    v<span class=\"token punctuation\">.</span><span class=\"token function\">pop</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "    <span class=\"token function\">ASSERT_EQ</span><span class=\"token punctuation\">(</span><span class=\"token number\">1</span><span class=\"token punctuation\">,</span> v<span class=\"token punctuation\">.</span><span class=\"token function\">top</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "  <span class=\"token punctuation\">}</span>\n" +
-                "\n" +
-                "  <span class=\"token function\">TEST</span><span class=\"token punctuation\">(</span><span class=\"token string\">\"apply pop: 2 times\"</span><span class=\"token punctuation\">)</span> <span class=\"token punctuation\">{</span>\n" +
-                "    v<span class=\"token punctuation\">.</span><span class=\"token function\">pop</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "    v<span class=\"token punctuation\">.</span><span class=\"token function\">pop</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "    <span class=\"token function\">ASSERT_TRUE</span><span class=\"token punctuation\">(</span>v<span class=\"token punctuation\">.</span><span class=\"token function\">empty</span><span class=\"token punctuation\">(</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
-                "  <span class=\"token punctuation\">}</span>\n" +
-                "<span class=\"token punctuation\">}</span><span class=\"token punctuation\">;</span> \n" +
-                "<span aria-hidden=\"true\" class=\"line-numbers-rows\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>\n" +
+                "    <span class=\"token comment\">// Send the message</span>\n" +
+                "    <span class=\"token class-name\">Transport</span><span class=\"token punctuation\">.</span><span class=\"token function\">send</span><span class=\"token punctuation\">(</span>msg<span class=\"token punctuation\">)</span><span class=\"token punctuation\">;</span>\n" +
+                "<span class=\"token punctuation\">}</span>\n" +
+                "<span aria-hidden=\"true\" class=\"line-numbers-rows\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>\n" +
                 " </div> \n" +
-                " <p>cctest的源码在Github上。</p> \n" +
-                " <div class=\"_2Uzcx_\">\n" +
-                "  <button class=\"VJbwyy\" type=\"button\" aria-label=\"复制代码\"><i aria-label=\"icon: copy\" class=\"anticon anticon-copy\">\n" +
-                "    <svg viewbox=\"64 64 896 896\" focusable=\"false\" class=\"\" data-icon=\"copy\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\">\n" +
-                "     <path d=\"M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z\"></path>\n" +
-                "    </svg></i></button>\n" +
-                "  <pre class=\"line-numbers  language-cpp\"><code class=\"  language-cpp\">https<span class=\"token operator\">:</span><span class=\"token operator\">/</span><span class=\"token operator\">/</span>github<span class=\"token punctuation\">.</span>com<span class=\"token operator\">/</span>ccup<span class=\"token operator\">/</span>cctest\n" +
-                "<span aria-hidden=\"true\" class=\"line-numbers-rows\"><span></span></span></code></pre>\n" +
+                " <h3>参数对象 (Parameter Object)</h3> \n" +
+                " <p>使用抽取参数对象的方式，可以把多个有关联的参数组成一个对象来传递。<br> 往往在采用了这个重构后，会浮现出原本代码中缺失的业务概念。<br> 这个重构也是消除“基本类型迷恋”坏味道的利器。<br> 过程演示如下：</p> \n" +
+                " <div class=\"image-package\"> \n" +
+                "  <div class=\"image-container\" style=\"max-width: 700px; max-height: 597px;\"> \n" +
+                "   <div class=\"image-container-fill\" style=\"padding-bottom: 52.23%;\"></div> \n" +
+                "   <div class=\"image-view\" data-width=\"1143\" data-height=\"597\">\n" +
+                "    <img src=\"https://file.codingstyle.cn/article/photo/2021/2453618-88198485749b903a.gif\" data-original-width=\"1143\" data-original-height=\"597\" data-original-format=\"image/gif\" data-original-filesize=\"262276\" data-image-index=\"1\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"image-loading\">\n" +
+                "   </div> \n" +
+                "  </div> \n" +
+                "   \n" +
                 " </div> \n" +
+                " <h3>用Builder代替构造器</h3> \n" +
+                " <p>从上面的演示可以发现，多个参数从调用方法的地方转移到了产生参数对象的地方。<br> 采取用Builder代替构造器的重构方法，可以使代码的意图更为明确。</p> \n" +
+                " <div class=\"image-package\"> \n" +
+                "  <div class=\"image-container\" style=\"max-width: 700px; max-height: 597px;\"> \n" +
+                "   <div class=\"image-container-fill\" style=\"padding-bottom: 52.23%;\"></div> \n" +
+                "   <div class=\"image-view\" data-width=\"1143\" data-height=\"597\">\n" +
+                "    <img src=\"https://file.codingstyle.cn/article/photo/2021/2453618-61cfcdb0a31d4d7a.gif\" data-original-width=\"1143\" data-original-height=\"597\" data-original-format=\"image/gif\" data-original-filesize=\"757830\" data-image-index=\"2\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"image-loading\">\n" +
+                "   </div> \n" +
+                "  </div> \n" +
+                "   \n" +
+                " </div> \n" +
+                " <h3>方法对象 (Method Object)</h3> \n" +
+                " <p>另一种思路是把使用过多参数的方法抽取成一个对象。<br> 采用这种方法，参数会成为对象的属性。<br> 演示如下：</p> \n" +
+                " <div class=\"image-package\"> \n" +
+                "  <div class=\"image-container\" style=\"max-width: 700px; max-height: 597px;\"> \n" +
+                "   <div class=\"image-container-fill\" style=\"padding-bottom: 52.23%;\"></div> \n" +
+                "   <div class=\"image-view\" data-width=\"1143\" data-height=\"597\">\n" +
+                "    <img src=\"https://file.codingstyle.cn/article/photo/2021/2453618-663d4ffd6f69e21c.gif\" data-original-width=\"1143\" data-original-height=\"597\" data-original-format=\"image/gif\" data-original-filesize=\"1093704\" data-image-index=\"3\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"image-loading\">\n" +
+                "   </div> \n" +
+                "  </div> \n" +
+                "   \n" +
+                " </div> \n" +
+                " <p>同样，也结合使用了Builder。</p> \n" +
+                " <h3>结论</h3> \n" +
+                " <ul> \n" +
+                "  <li>参数对象可以把多个原始类型的参数合并为一个有业务意义的对象。</li> \n" +
+                "  <li>方法对象可以把较为复杂的操作独立为单独的对象。原本的参数变为对象的状态。</li> \n" +
+                "  <li>Builder模式可以有效改善构造器参数参数过多带来的问题。</li> \n" +
+                " </ul> \n" +
+                " <p>当然，以上仅仅是进行改进的开始。实际中往往会发现并非所有的参数都应该属于同一对象。也可能被重构的方法本身需要拆分成不同的部分。需要结合其它方法进行更深入的重构。</p> \n" +
                 "</article>";
     }
 }

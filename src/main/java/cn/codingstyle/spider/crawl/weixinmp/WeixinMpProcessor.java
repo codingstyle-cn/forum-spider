@@ -1,10 +1,9 @@
 package cn.codingstyle.spider.crawl.weixinmp;
 
-import cn.codingstyle.spider.crawl.CrawlOriginalData;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.selector.Html;
+import us.codecraft.webmagic.selector.Selectable;
 
 import java.util.List;
 
@@ -32,14 +31,20 @@ public class WeixinMpProcessor extends PlatformProcessor {
     }
 
     @Override
-    protected String parseAuthor(Html html) {
-        String author = html.xpath("//span[@class='rich_media_meta rich_media_meta_text']").toString();
-        String anotherAuthor = html.xpath("//span[@id='js_author_name']/text()").toString();
-        if (StringUtils.isBlank(anotherAuthor)) {
-            return author;
-        } else {
-            return anotherAuthor;
+    public String parseAuthor(Html html) {
+        Selectable firstAuthorHtmlFormat = html.xpath("//span[@class='rich_media_meta rich_media_meta_text']/text()");
+        if (firstAuthorHtmlFormat.match()) {
+            return firstAuthorHtmlFormat.toString().trim();
         }
+        Selectable secondAuthorHtmlFormat = html.xpath("//span[@id='js_author_name']/text()");
+        if (secondAuthorHtmlFormat.match()) {
+            return secondAuthorHtmlFormat.toString().trim();
+        }
+        Selectable thirdAuthorHtmlFormat = html.xpath("//span[@class='rich_media_meta rich_media_meta_nickname']/a/text()");
+        if (thirdAuthorHtmlFormat.match()) {
+            return thirdAuthorHtmlFormat.toString().trim();
+        }
+        return "";
     }
 
 }

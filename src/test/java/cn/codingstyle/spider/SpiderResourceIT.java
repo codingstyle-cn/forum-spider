@@ -65,7 +65,7 @@ class SpiderResourceIT {
         postAndWait(command);
 
         CrawlRecordDetail weixinMpArticle = crawlRecordDetailRepository.findAll().get(0);
-        assertThat(weixinMpArticle.getAuthor()).isEqualTo("<span class=\"rich_media_meta rich_media_meta_text\"> SSgeek </span>");
+        assertThat(weixinMpArticle.getAuthor()).isEqualTo("SSgeek");
         assertThat(weixinMpArticle.getSubject()).isEqualTo("Jenkins workflowLibs库的使(妙)用");
         assertThat(weixinMpArticle.getContent()).isEqualTo(expectedMpContent());
     }

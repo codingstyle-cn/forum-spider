@@ -27,7 +27,7 @@ class JianShuPipelineTest {
 
         JianShuPipeline jianShuPipeline = new JianShuPipeline(upYunHelper, null);
 
-        String content = "<div class=\"image-caption\">lambda.png</div><img data-original-src=\"//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png\" data-original-width=\"384\" data-original-height=\"232\" data-original-format=\"image/png\" data-original-filesize=\"34390\" data-image-index=\"0\" style=\"cursor: zoom-in;\" class=\"\" src=\"//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png?imageMogr2/auto-orient/strip|imageView2/2/w/384/format/webp\">";
+        String content = "<div class=\"image-caption\">lambda.png</div><img data-original-src=\"//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png\" data-original-width=\"384\" data-original-height=\"232\" data-original-format=\"image/png\" data-original-filesize=\"34390\" data-image-index=\"0\" style=\"cursor: zoom-in;\" class=\"\" >";
         List<String> urls = singletonList("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png");
 
         String modifiedContent = jianShuPipeline.modifyContent(content, urls);
@@ -48,10 +48,8 @@ class JianShuPipelineTest {
     }
 
     private String expectedContent() {
-        return "<img data-original-src=\"https://file.codingstyle.cn/article/photo/" +
+        return "<img src=\"https://file.codingstyle.cn/article/photo/" +
             currentYear +
-            "/4790087-0a958b58ad2c6511.png\" data-original-width=\"384\" data-original-height=\"232\" data-original-format=\"image/png\" data-original-filesize=\"34390\" data-image-index=\"0\" style=\"cursor: zoom-in;\" class=\"\" src=\"https://file.codingstyle.cn/article/photo/" +
-            currentYear +
-            "/4790087-0a958b58ad2c6511.png?imageMogr2/auto-orient/strip|imageView2/2/w/384/format/webp\">";
+            "/4790087-0a958b58ad2c6511.png\" data-original-width=\"384\" data-original-height=\"232\" data-original-format=\"image/png\" data-original-filesize=\"34390\" data-image-index=\"0\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"\" >";
     }
 }

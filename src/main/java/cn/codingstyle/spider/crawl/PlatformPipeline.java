@@ -32,26 +32,21 @@ public abstract class PlatformPipeline implements Pipeline {
     }
 
     protected CrawlRecordDetail createCrawlRecordDetail(CrawlOriginalData data, String content) {
-        return CrawlRecordDetail.builder()
-                                .author(data.getAuthor())
-                                .subject(data.getSubject())
-                                .content(content)
-                                .sync(false)
-                                .originalUrl(data.getOriginalUrl())
-                                .recordId(data.getRecordId())
-                                .source(getCrawlingSource())
-                                .build();
+        return CrawlRecordDetail
+                .builder()
+                .author(data.getAuthor())
+                .subject(data.getSubject())
+                .content(content)
+                .sync(false)
+                .originalUrl(data.getOriginalUrl())
+                .recordId(data.getRecordId())
+                .source(getCrawlingSource())
+                .build();
     }
 
     protected abstract String getCrawlingSource();
 
-
     protected abstract String modifyContent(String content, List<String> imageUrls);
-
-    protected String removeImageCaption(String body) {
-        return body.replaceAll("(<div class=\"image-caption\">)(?:(?:(?:&#160;)|(?:\\s+))*)((\\w|\\W)*?)(</div>)"
-            , "");
-    }
 
     protected String modifyImages(String body, List<String> imageUrls) {
         if (imageUrls.size() <= 0) {
@@ -61,10 +56,11 @@ public abstract class PlatformPipeline implements Pipeline {
         for (String url : imageUrls) {
             body = replaceAndUploadImage(body, currentYear, url, buildPath(currentYear));
         }
-        body = body.replaceAll("//upload-images.jianshu.io/upload_images/",
-                               "https://file.codingstyle.cn/article/photo/" + currentYear + "/");
+        body = replaceImageUrl(body, currentYear);
         return body;
     }
+
+    protected abstract String replaceImageUrl(String body, String currentYear);
 
     private String buildPath(String currentYear) {
         return "/article/photo/" + currentYear;

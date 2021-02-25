@@ -45,4 +45,8 @@ public class WeixinMpPipeline extends PlatformPipeline {
         return body;
     }
 
+    @Override
+    protected String replaceImageUrl(String body, String currentYear) {
+        return body;
+    }
 }

@@ -44,4 +44,15 @@ public class JianShuPipeline extends PlatformPipeline {
                         "style=\"padding-bottom: 25px;cursor: zoom-in;\"");
         return body;
     }
+
+    private String removeImageCaption(String body) {
+        return body.replaceAll("(<div class=\"image-caption\">)(?:(?:(?:&#160;)|(?:\\s+))*)((\\w|\\W)*?)(</div>)"
+                , "");
+    }
+
+    @Override
+    protected String replaceImageUrl(String body, String currentYear) {
+        return body.replaceAll("//upload-images.jianshu.io/upload_images/",
+                "https://file.codingstyle.cn/article/photo/" + currentYear + "/");
+    }
 }

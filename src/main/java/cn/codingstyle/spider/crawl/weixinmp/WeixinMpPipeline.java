@@ -31,18 +31,20 @@ public class WeixinMpPipeline extends PlatformPipeline {
 
     @Override
     protected String replaceAndUploadImage(String body, String currentYear, String url, String path) {
-        String imageRealUrl = url.substring(0, url.lastIndexOf("?"));
-        String imageType = url.substring(url.lastIndexOf("=") + 1);
-        String fileName = fileNameGenerator.createFileName(imageType);
+        String sourceUrl = url.substring(0, url.lastIndexOf("?"));
+        String fileName = getFileName(url);
         String newUrl = "https://file.codingstyle.cn/article/photo/" + currentYear + "/" + fileName;
-        body = replaceImageUrl(body, imageRealUrl, newUrl);
-        upYunHelper.uploadFile2(imageRealUrl, fileName);
-        return body;
+        upYunHelper.uploadFile(sourceUrl, getUploadFilePath(fileName));
+        return replaceImageUrl(body, sourceUrl, newUrl);
+    }
+
+    private String getFileName(String url) {
+        String imageType = url.substring(url.lastIndexOf("=") + 1);
+        return fileNameGenerator.createFileName(imageType);
     }
 
     protected String replaceImageUrl(String body, String oldUrl, String newUrl) {
-        body = body.replaceAll(oldUrl, newUrl + "\" src=\"" + newUrl);
-        return body;
+        return body.replaceAll(oldUrl, newUrl + "\" src=\"" + newUrl);
     }
 
     @Override

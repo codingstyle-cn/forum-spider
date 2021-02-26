@@ -32,7 +32,7 @@ class JianShuPipelineTest {
 
         String modifiedContent = jianShuPipeline.modifyContent(content, urls);
         String fileName = "/article/photo/" + currentYear + "/4790087-0a958b58ad2c6511.png";
-        verify(upYunHelper).uploadFile(currentYear, "//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png", fileName);
+        verify(upYunHelper).uploadFile("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png", "/article/photo/" + LocalDate.now().getYear() + "/" + fileName.substring(fileName.lastIndexOf("/") + 1));
         assertThat(modifiedContent).isEqualTo(expectedContent());
     }
 

@@ -37,7 +37,7 @@ class WeixinMpPipelineTest {
         String modifiedContent = pipeline.modifyContent(content, urls);
         String sourceImgUrl = "https://mmbiz.qpic.cn/mmbiz_png/Oy8CSKcrQ44Mbs2MZichqVn5wbPjPAQrdPCZfusl6KKfTLJoZ6QxdXZ8bzTic6tiaZb" +
             "X6TVbG1LABfYX0Btv7ial1Q/640";
-        verify(upYunHelper).uploadFile2(sourceImgUrl, fileName);
+        verify(upYunHelper).uploadFile(sourceImgUrl, "/article/photo/" + LocalDate.now().getYear() + "/" + fileName);
         assertThat(modifiedContent).isEqualTo(expectedContent());
     }
 

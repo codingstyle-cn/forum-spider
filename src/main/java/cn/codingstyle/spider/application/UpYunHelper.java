@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 
 import static java.lang.String.format;
 
@@ -24,27 +23,27 @@ public class UpYunHelper {
         this.upYunConfig = upYunConfig;
     }
 
-    public void uploadFile(String currentYear, String url, String fileName) {
+    public void uploadFile(String sourceUrl, String uploadFilePath) {
+        File file = null;
         try {
-            boolean result = upload(currentYear, addProtocolPrefix(url), fileName);
-            log.info("上传又拍云结果:{}", result);
+            file = fileUtil.downloadFile(addProtocolPrefix(sourceUrl));
+            boolean result = upload(file, uploadFilePath);
+            if (!result) {
+                throw new RuntimeException("upload file to UpYun Failed");
+            }
         } catch (Exception e) {
-            String errorMsg = format("上传又拍云失败: %s, url: %s", e.getMessage(), url);
+            String errorMsg = format("上传图片失败: source url: %s,uploadFilePath:%s", sourceUrl, uploadFilePath);
             log.error(errorMsg, e);
             throw new RuntimeException(errorMsg);
+        } finally {
+            if (file != null) {
+                file.delete();
+            }
         }
     }
 
     private String addProtocolPrefix(String url) {
-        return String.format("https:%s", url);
-    }
-
-    private boolean upload(String currentYear, String url, String fileName) throws Exception {
-        String realFileName = fileName.substring(fileName.lastIndexOf("."));
-        File file = fileUtil.downloadFile(url, realFileName);
-        boolean result = upload(file, "/article/photo/" + currentYear + "/" + realFileName);
-        file.delete();
-        return result;
+        return url.startsWith("http") ? String.format("https:%s", url) : url;
     }
 
     private boolean upload(File file, String uploadFilePath) throws IOException, UpException {
@@ -61,26 +60,5 @@ public class UpYunHelper {
         upyun.setContentMD5(UpYun.md5(file));
         // 文件上传
         return upyun.writeFile(uploadFilePath, file);
-    }
-
-    public void uploadFile2(String sourceUrl, String fileName) {
-        File file = null;
-        try {
-            file = fileUtil.downloadFile(sourceUrl);
-            String uploadFilePath = "/article/photo/" + String.valueOf(LocalDate.now().getYear()) + "/" + fileName;
-            boolean result = upload(file, uploadFilePath);
-            if (!result) {
-                throw new RuntimeException("upload file to UpYun Failed");
-            }
-        } catch (Exception e) {
-            String errorMsg = format("上传图片失败: source url: %s", fileName);
-            log.error(errorMsg, e);
-            throw new RuntimeException(errorMsg);
-        } finally {
-            if (file != null) {
-                file.delete();
-            }
-        }
-
     }
 }

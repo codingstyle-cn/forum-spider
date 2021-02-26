@@ -60,6 +60,10 @@ public abstract class PlatformPipeline implements Pipeline {
         return body;
     }
 
+    protected String getUploadFilePath(String fileName) {
+        return "/article/photo/" + LocalDate.now().getYear() + "/" + fileName;
+    }
+
     protected abstract String replaceImageUrl(String body, String currentYear);
 
     private String buildPath(String currentYear) {

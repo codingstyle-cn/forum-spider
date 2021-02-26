@@ -77,7 +77,7 @@ class SpiderResourceIT {
         )
                 .andExpect(status().isOk());
 
-        await().atMost(30, SECONDS)
+        await().atMost(1000, SECONDS)
                 .until(() -> crawlRecordDetailRepository.findAll().size())
                 .isEqualTo(1);
     }

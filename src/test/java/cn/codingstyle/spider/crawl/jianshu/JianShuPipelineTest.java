@@ -1,6 +1,7 @@
 package cn.codingstyle.spider.crawl.jianshu;
 
 import cn.codingstyle.spider.application.UpYunHelper;
+import cn.codingstyle.spider.crawl.weixinmp.FileNameGenerator;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -25,7 +26,7 @@ class JianShuPipelineTest {
     void should_upload_images_to_storage_and_replace_URLs() {
         UpYunHelper upYunHelper = mock(UpYunHelper.class);
 
-        JianShuPipeline jianShuPipeline = new JianShuPipeline(upYunHelper, null);
+        JianShuPipeline jianShuPipeline = new JianShuPipeline(upYunHelper, null, new FileNameGenerator());
 
         String content = "<div class=\"image-caption\">lambda.png</div><img data-original-src=\"//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png\" data-original-width=\"384\" data-original-height=\"232\" data-original-format=\"image/png\" data-original-filesize=\"34390\" data-image-index=\"0\" style=\"cursor: zoom-in;\" class=\"\" >";
         List<String> urls = singletonList("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png");
@@ -39,7 +40,7 @@ class JianShuPipelineTest {
     @Test
     void should_remove_image_caption() {
         UpYunHelper upYunHelper = mock(UpYunHelper.class);
-        JianShuPipeline jianShuPipeline = new JianShuPipeline(upYunHelper, null);
+        JianShuPipeline jianShuPipeline = new JianShuPipeline(upYunHelper, null, new FileNameGenerator());
         String content = "<div class=\"image-caption\">image.png</div>";
 
         String modifiedContent = jianShuPipeline.modifyContent(content, new ArrayList<>());

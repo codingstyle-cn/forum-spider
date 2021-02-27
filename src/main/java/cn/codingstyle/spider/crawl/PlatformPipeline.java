@@ -1,6 +1,7 @@
 package cn.codingstyle.spider.crawl;
 
 import cn.codingstyle.spider.application.UpYunHelper;
+import cn.codingstyle.spider.crawl.weixinmp.FileNameGenerator;
 import cn.codingstyle.spider.domain.CrawlRecordDetail;
 import cn.codingstyle.spider.domain.CrawlRecordDetailService;
 import us.codecraft.webmagic.ResultItems;
@@ -18,10 +19,12 @@ import java.util.List;
 public abstract class PlatformPipeline implements Pipeline {
     protected final UpYunHelper upYunHelper;
     protected final CrawlRecordDetailService crawlRecordDetailService;
+    protected final FileNameGenerator fileNameGenerator;
 
-    public PlatformPipeline(UpYunHelper upYunHelper, CrawlRecordDetailService crawlRecordDetailService) {
+    public PlatformPipeline(UpYunHelper upYunHelper, CrawlRecordDetailService crawlRecordDetailService, FileNameGenerator fileNameGenerator) {
         this.upYunHelper = upYunHelper;
         this.crawlRecordDetailService = crawlRecordDetailService;
+        this.fileNameGenerator = fileNameGenerator;
     }
 
     @Override
@@ -70,5 +73,10 @@ public abstract class PlatformPipeline implements Pipeline {
 
     protected String getNewUrl(String fileName) {
         return "https://file.codingstyle.cn/article/photo/" + getCurrentYear() + "/" + fileName;
+    }
+
+    protected String getFileName(String url) {
+        String imageType = url.substring(url.lastIndexOf("=") + 1);
+        return fileNameGenerator.createFileName(imageType);
     }
 }

@@ -2,6 +2,7 @@ package cn.codingstyle.spider.crawl.jianshu;
 
 import cn.codingstyle.spider.application.UpYunHelper;
 import cn.codingstyle.spider.crawl.PlatformPipeline;
+import cn.codingstyle.spider.crawl.weixinmp.FileNameGenerator;
 import cn.codingstyle.spider.domain.CrawlRecordDetailService;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +17,8 @@ public class JianShuPipeline extends PlatformPipeline {
 
     private final static String CRAWLING_SOURCE = "jianshu";
 
-    public JianShuPipeline(UpYunHelper upYunHelper, CrawlRecordDetailService crawlRecordDetailService) {
-        super(upYunHelper, crawlRecordDetailService);
+    public JianShuPipeline(UpYunHelper upYunHelper, CrawlRecordDetailService crawlRecordDetailService, FileNameGenerator fileNameGenerator) {
+        super(upYunHelper, crawlRecordDetailService, fileNameGenerator);
     }
 
     @Override

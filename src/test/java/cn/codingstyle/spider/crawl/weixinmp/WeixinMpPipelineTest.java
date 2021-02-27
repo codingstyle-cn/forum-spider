@@ -44,7 +44,7 @@ class WeixinMpPipelineTest {
     @Test
     void should_remove_image_caption() {
         UpYunHelper upYunHelper = mock(UpYunHelper.class);
-        JianShuPipeline jianShuPipeline = new JianShuPipeline(upYunHelper, null);
+        JianShuPipeline jianShuPipeline = new JianShuPipeline(upYunHelper, null, new FileNameGenerator());
         String content = "<div class=\"image-caption\">image.png</div>";
 
         String modifiedContent = jianShuPipeline.modifyContent(content, new ArrayList<>());

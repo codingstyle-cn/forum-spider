@@ -11,12 +11,10 @@ import java.util.List;
 public class WeixinMpPipeline extends PlatformPipeline {
 
     private final static String CRAWLING_SOURCE = "weixinmp";
-    private final FileNameGenerator fileNameGenerator;
 
     public WeixinMpPipeline(UpYunHelper upYunHelper,
                             CrawlRecordDetailService crawlRecordDetailService, FileNameGenerator fileNameGenerator) {
-        super(upYunHelper, crawlRecordDetailService);
-        this.fileNameGenerator = fileNameGenerator;
+        super(upYunHelper, crawlRecordDetailService, fileNameGenerator);
     }
 
     @Override
@@ -36,11 +34,6 @@ public class WeixinMpPipeline extends PlatformPipeline {
         String newUrl = getNewUrl(fileName);
         upYunHelper.uploadFile(sourceUrl, getUploadFilePath(fileName));
         return replaceImageUrl(body, sourceUrl, newUrl);
-    }
-
-    private String getFileName(String url) {
-        String imageType = url.substring(url.lastIndexOf("=") + 1);
-        return fileNameGenerator.createFileName(imageType);
     }
 
     protected String replaceImageUrl(String body, String oldUrl, String newUrl) {

@@ -80,8 +80,5 @@ public abstract class PlatformPipeline implements Pipeline {
         return fileNameGenerator.createFileName(imageType);
     }
 
-    // Weixin only
-    public String getImageType(String url) {
-        return url.substring(url.lastIndexOf("=") + 1);
-    }
+    public abstract String getImageType(String url);
 }

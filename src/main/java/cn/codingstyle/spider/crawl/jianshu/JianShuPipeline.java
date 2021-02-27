@@ -49,18 +49,23 @@ public class JianShuPipeline extends PlatformPipeline {
 
     protected String editImageHtmlLabelFormat(String body) {
         body = body.replaceAll("data-original-src", "src")
-                .replace("style=\"cursor: zoom-in;\"",
-                        "style=\"padding-bottom: 25px;cursor: zoom-in;\"");
+            .replace("style=\"cursor: zoom-in;\"",
+                "style=\"padding-bottom: 25px;cursor: zoom-in;\"");
         return body;
     }
 
     private String removeImageCaption(String body) {
         return body.replaceAll("(<div class=\"image-caption\">)(?:(?:(?:&#160;)|(?:\\s+))*)((\\w|\\W)*?)(</div>)"
-                , "");
+            , "");
     }
 
     protected String replaceImageUrl(String body, String fileName, String newUrl) {
         return body.replaceAll("//upload-images.jianshu.io/upload_images/" + fileName,
-                newUrl);
+            newUrl);
+    }
+
+    @Override
+    public String getImageType(String url) {
+        return url.substring(url.lastIndexOf(".") + 1);
     }
 }

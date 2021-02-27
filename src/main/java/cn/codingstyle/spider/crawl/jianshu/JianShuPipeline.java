@@ -32,13 +32,14 @@ public class JianShuPipeline extends PlatformPipeline {
     }
 
     @Override
-    protected String replaceAndUploadImage(String body, String currentYear, String url, String path) {
-        String fileName = url.substring(url.lastIndexOf("/") + 1);
-        upYunHelper.uploadFile(url, getUploadFilePath(fileName));
-        return replaceImageUrl(body);
+    protected String replaceAndUploadImage(String body, String sourceUrl) {
+        String fileName = sourceUrl.substring(sourceUrl.lastIndexOf("/") + 1);
+        upYunHelper.uploadFile(sourceUrl, getUploadFilePath(fileName));
+        body = replaceImageUrl(body, fileName, getNewUrl(fileName));
+        return editImageHtmlLabelFormat(body);
     }
 
-    protected String replaceImageUrl(String body) {
+    protected String editImageHtmlLabelFormat(String body) {
         body = body.replaceAll("data-original-src", "src")
                 .replace("style=\"cursor: zoom-in;\"",
                         "style=\"padding-bottom: 25px;cursor: zoom-in;\"");
@@ -50,9 +51,8 @@ public class JianShuPipeline extends PlatformPipeline {
                 , "");
     }
 
-    @Override
-    protected String replaceImageUrl(String body, String currentYear) {
-        return body.replaceAll("//upload-images.jianshu.io/upload_images/",
-                "https://file.codingstyle.cn/article/photo/" + currentYear + "/");
+    protected String replaceImageUrl(String body, String fileName, String newUrl) {
+        return body.replaceAll("//upload-images.jianshu.io/upload_images/" + fileName,
+                newUrl);
     }
 }

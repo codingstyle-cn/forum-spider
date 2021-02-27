@@ -52,24 +52,23 @@ public abstract class PlatformPipeline implements Pipeline {
         if (imageUrls.size() <= 0) {
             return body;
         }
-        String currentYear = String.valueOf(LocalDate.now().getYear());
         for (String url : imageUrls) {
-            body = replaceAndUploadImage(body, currentYear, url, buildPath(currentYear));
+            body = replaceAndUploadImage(body, url);
         }
-        body = replaceImageUrl(body, currentYear);
         return body;
     }
 
     protected String getUploadFilePath(String fileName) {
-        return "/article/photo/" + LocalDate.now().getYear() + "/" + fileName;
+        return "/article/photo/" + getCurrentYear() + "/" + fileName;
     }
 
-    protected abstract String replaceImageUrl(String body, String currentYear);
-
-    private String buildPath(String currentYear) {
-        return "/article/photo/" + currentYear;
+    private int getCurrentYear() {
+        return LocalDate.now().getYear();
     }
 
-    protected abstract String replaceAndUploadImage(String body, String currentYear, String url, String path);
+    protected abstract String replaceAndUploadImage(String body, String sourceUrl);
 
+    protected String getNewUrl(String fileName) {
+        return "https://file.codingstyle.cn/article/photo/" + getCurrentYear() + "/" + fileName;
+    }
 }

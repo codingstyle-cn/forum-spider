@@ -39,5 +39,4 @@ public class WeixinMpPipeline extends PlatformPipeline {
     protected String replaceImageUrl(String body, String oldUrl, String newUrl) {
         return body.replaceAll(oldUrl, newUrl + "\" src=\"" + newUrl);
     }
-
 }

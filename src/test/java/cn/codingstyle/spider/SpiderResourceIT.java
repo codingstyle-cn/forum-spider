@@ -49,6 +49,8 @@ class SpiderResourceIT {
     void should_crawl_jianshu_platform_success() throws Exception {
         CreateCrawlCommand command = new CreateCrawlCommand();
         command.setUrls("https://www.jianshu.com/p/e1810fdf5d11");
+        when(fileNameGenerator.createFileName("png")).thenReturn("mock-png.png");
+        when(fileNameGenerator.createFileName("gif")).thenReturn("mock-gif.gif");
         postAndWait(command);
 
         CrawlRecordDetail jianshuArticle = crawlRecordDetailRepository.findAll().get(0);
@@ -203,7 +205,7 @@ class SpiderResourceIT {
                 "  <div class=\"image-container\" style=\"max-width: 700px; max-height: 544px; background-color: transparent;\"> \n" +
                 "   <div class=\"image-container-fill\" style=\"padding-bottom: 56.67%;\"></div> \n" +
                 "   <div class=\"image-view\" data-width=\"960\" data-height=\"544\">\n" +
-                "    <img src=\"https://file.codingstyle.cn/article/photo/2021/2453618-74d25308997ab385.png\" data-original-width=\"960\" data-original-height=\"544\" data-original-format=\"image/png\" data-original-filesize=\"761869\" data-image-index=\"0\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"\" src=\"https://file.codingstyle.cn/article/photo/2021/2453618-74d25308997ab385.png?imageMogr2/auto-orient/strip|imageView2/2/w/960/format/webp\">\n" +
+                "    <img src=\"https://file.codingstyle.cn/article/photo/2021/mock-png.png\" data-original-width=\"960\" data-original-height=\"544\" data-original-format=\"image/png\" data-original-filesize=\"761869\" data-image-index=\"0\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"\" src=\"https://file.codingstyle.cn/article/photo/2021/mock-png.png?imageMogr2/auto-orient/strip|imageView2/2/w/960/format/webp\">\n" +
                 "   </div> \n" +
                 "  </div> \n" +
                 "   \n" +
@@ -258,7 +260,7 @@ class SpiderResourceIT {
                 "  <div class=\"image-container\" style=\"max-width: 700px; max-height: 597px;\"> \n" +
                 "   <div class=\"image-container-fill\" style=\"padding-bottom: 52.23%;\"></div> \n" +
                 "   <div class=\"image-view\" data-width=\"1143\" data-height=\"597\">\n" +
-                "    <img src=\"https://file.codingstyle.cn/article/photo/2021/2453618-88198485749b903a.gif\" data-original-width=\"1143\" data-original-height=\"597\" data-original-format=\"image/gif\" data-original-filesize=\"262276\" data-image-index=\"1\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"image-loading\">\n" +
+                "    <img src=\"https://file.codingstyle.cn/article/photo/2021/mock-gif.gif\" data-original-width=\"1143\" data-original-height=\"597\" data-original-format=\"image/gif\" data-original-filesize=\"262276\" data-image-index=\"1\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"image-loading\">\n" +
                 "   </div> \n" +
                 "  </div> \n" +
                 "   \n" +
@@ -269,7 +271,7 @@ class SpiderResourceIT {
                 "  <div class=\"image-container\" style=\"max-width: 700px; max-height: 597px;\"> \n" +
                 "   <div class=\"image-container-fill\" style=\"padding-bottom: 52.23%;\"></div> \n" +
                 "   <div class=\"image-view\" data-width=\"1143\" data-height=\"597\">\n" +
-                "    <img src=\"https://file.codingstyle.cn/article/photo/2021/2453618-61cfcdb0a31d4d7a.gif\" data-original-width=\"1143\" data-original-height=\"597\" data-original-format=\"image/gif\" data-original-filesize=\"757830\" data-image-index=\"2\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"image-loading\">\n" +
+                "    <img src=\"https://file.codingstyle.cn/article/photo/2021/mock-gif.gif\" data-original-width=\"1143\" data-original-height=\"597\" data-original-format=\"image/gif\" data-original-filesize=\"757830\" data-image-index=\"2\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"image-loading\">\n" +
                 "   </div> \n" +
                 "  </div> \n" +
                 "   \n" +
@@ -280,7 +282,7 @@ class SpiderResourceIT {
                 "  <div class=\"image-container\" style=\"max-width: 700px; max-height: 597px;\"> \n" +
                 "   <div class=\"image-container-fill\" style=\"padding-bottom: 52.23%;\"></div> \n" +
                 "   <div class=\"image-view\" data-width=\"1143\" data-height=\"597\">\n" +
-                "    <img src=\"https://file.codingstyle.cn/article/photo/2021/2453618-663d4ffd6f69e21c.gif\" data-original-width=\"1143\" data-original-height=\"597\" data-original-format=\"image/gif\" data-original-filesize=\"1093704\" data-image-index=\"3\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"image-loading\">\n" +
+                "    <img src=\"https://file.codingstyle.cn/article/photo/2021/mock-gif.gif\" data-original-width=\"1143\" data-original-height=\"597\" data-original-format=\"image/gif\" data-original-filesize=\"1093704\" data-image-index=\"3\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"image-loading\">\n" +
                 "   </div> \n" +
                 "  </div> \n" +
                 "   \n" +

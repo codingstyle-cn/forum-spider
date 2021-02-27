@@ -34,16 +34,9 @@ public class JianShuPipeline extends PlatformPipeline {
 
     @Override
     protected String replaceAndUploadImage(String body, String sourceUrl) {
-        /*
-        String sourceUrl = url.substring(0, url.lastIndexOf("?"));
-        String fileName = getFileName(url);
-        String newUrl = getNewUrl(fileName);
+        String fileName = getFileName(sourceUrl);
         upYunHelper.uploadFile(sourceUrl, getUploadFilePath(fileName));
-        return replaceImageUrl(body, sourceUrl, newUrl);
-         */
-        String fileName = sourceUrl.substring(sourceUrl.lastIndexOf("/") + 1);
-        upYunHelper.uploadFile(sourceUrl, getUploadFilePath(fileName));
-        body = replaceImageUrl(body, fileName, getNewUrl(fileName));
+        body = replaceImageUrl(body, sourceUrl, getNewUrl(fileName));
         return editImageHtmlLabelFormat(body);
     }
 
@@ -59,9 +52,8 @@ public class JianShuPipeline extends PlatformPipeline {
             , "");
     }
 
-    protected String replaceImageUrl(String body, String fileName, String newUrl) {
-        return body.replaceAll("//upload-images.jianshu.io/upload_images/" + fileName,
-            newUrl);
+    protected String replaceImageUrl(String body, String oldUrl, String newUrl) {
+        return body.replaceAll(oldUrl, newUrl);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package cn.codingstyle.spider.crawl;
 
-import cn.codingstyle.spider.application.UpYunHelper;
+import cn.codingstyle.spider.crawl.storage.CloudStorageHelper;
 import cn.codingstyle.spider.domain.CrawlRecordDetail;
 import cn.codingstyle.spider.domain.CrawlRecordDetailService;
 import us.codecraft.webmagic.ResultItems;
@@ -16,12 +16,12 @@ import java.util.List;
  * @author f0rb on 2021-02-06
  */
 public abstract class PlatformPipeline implements Pipeline {
-    protected final UpYunHelper upYunHelper;
+    protected final CloudStorageHelper cloudStorageHelper;
     protected final CrawlRecordDetailService crawlRecordDetailService;
     protected final FileNameGenerator fileNameGenerator;
 
-    public PlatformPipeline(UpYunHelper upYunHelper, CrawlRecordDetailService crawlRecordDetailService, FileNameGenerator fileNameGenerator) {
-        this.upYunHelper = upYunHelper;
+    public PlatformPipeline(CloudStorageHelper cloudStorageHelper, CrawlRecordDetailService crawlRecordDetailService, FileNameGenerator fileNameGenerator) {
+        this.cloudStorageHelper = cloudStorageHelper;
         this.crawlRecordDetailService = crawlRecordDetailService;
         this.fileNameGenerator = fileNameGenerator;
     }
@@ -46,8 +46,6 @@ public abstract class PlatformPipeline implements Pipeline {
                 .build();
     }
 
-    protected abstract String modifyStyle(String content);
-
     protected abstract String getCrawlingSource();
 
     public String modifyContent(String content, List<String> imageUrls) {
@@ -56,14 +54,22 @@ public abstract class PlatformPipeline implements Pipeline {
         return content;
     }
 
-    protected String modifyImages(String body, List<String> imageUrls) {
+    protected String modifyImages(String content, List<String> imageUrls) {
         if (imageUrls.size() <= 0) {
-            return body;
+            return content;
         }
         for (String url : imageUrls) {
-            body = replaceAndUploadImage(body, url);
+            content = replaceAndUploadImage(content, url);
         }
-        return body;
+        return content;
+    }
+
+    protected abstract String modifyStyle(String content);
+
+    protected String replaceAndUploadImage(String content, String sourceUrl) {
+        String fileName = getFileName(sourceUrl);
+        cloudStorageHelper.uploadFile(sourceUrl, getUploadFilePath(fileName));
+        return replaceImageUrl(content, sourceUrl, getNewUrl(fileName));
     }
 
     protected String getUploadFilePath(String fileName) {
@@ -73,8 +79,6 @@ public abstract class PlatformPipeline implements Pipeline {
     private int getCurrentYear() {
         return LocalDate.now().getYear();
     }
-
-    protected abstract String replaceAndUploadImage(String body, String sourceUrl);
 
     protected String getNewUrl(String fileName) {
         return "https://file.codingstyle.cn/article/photo/" + getCurrentYear() + "/" + fileName;

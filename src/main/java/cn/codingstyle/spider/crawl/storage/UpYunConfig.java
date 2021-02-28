@@ -1,4 +1,4 @@
-package cn.codingstyle.spider.application;
+package cn.codingstyle.spider.crawl.storage;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

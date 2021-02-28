@@ -1,6 +1,6 @@
 package cn.codingstyle.spider.crawl.weixinmp;
 
-import cn.codingstyle.spider.application.UpYunHelper;
+import cn.codingstyle.spider.crawl.storage.CloudStorageHelper;
 import cn.codingstyle.spider.crawl.FileNameGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,13 +23,13 @@ class WeixinMpPipelineTest {
     private final String currentYear = LocalDate.now().getYear() + "";
     private WeixinMpPipeline pipeline;
     private FileNameGenerator fileNameGenerator;
-    private UpYunHelper upYunHelper;
+    private CloudStorageHelper cloudStorageHelper;
 
     @BeforeEach
     void setUp() {
-        upYunHelper = mock(UpYunHelper.class);
+        cloudStorageHelper = mock(CloudStorageHelper.class);
         fileNameGenerator = mock(FileNameGenerator.class);
-        pipeline = new WeixinMpPipeline(upYunHelper, null, fileNameGenerator);
+        pipeline = new WeixinMpPipeline(cloudStorageHelper, null, fileNameGenerator);
     }
 
     @Test
@@ -42,8 +42,8 @@ class WeixinMpPipelineTest {
 
         String modifiedContent = pipeline.modifyContent(content, urls);
         String sourceImgUrl = "https://mmbiz.qpic.cn/mmbiz_png/Oy8CSKcrQ44Mbs2MZichqVn5wbPjPAQrdPCZfusl6KKfTLJoZ6QxdXZ8bzTic6tiaZb" +
-            "X6TVbG1LABfYX0Btv7ial1Q/640";
-        verify(upYunHelper).uploadFile(sourceImgUrl, "/article/photo/" + LocalDate.now().getYear() + "/" + fileName);
+            "X6TVbG1LABfYX0Btv7ial1Q/640?wx_fmt=png";
+        verify(cloudStorageHelper).uploadFile(sourceImgUrl, "/article/photo/" + LocalDate.now().getYear() + "/" + fileName);
         assertThat(modifiedContent).isEqualTo(expectedContent());
     }
 
@@ -52,11 +52,11 @@ class WeixinMpPipelineTest {
             currentYear +
             "/11111.png\" src=\"https://file.codingstyle.cn/article/photo/" +
             currentYear +
-            "/11111.png?wx_fmt=png\" data-type=\"png\" data-w=\"1350\" style=\"display: block; margin-right: auto; margin-left: auto; zoom: 80%; width: 677px !important; height: auto !important; visibility: visible !important;\" _width=\"677px\" data-darkmode-color-16129599806201=\"rgb(163, 163, 163)\" data-darkmode-original-color-16129599806201=\"#fff|rgb(0,0,0)\" class=\"\" src=\"https://file.codingstyle.cn/article/photo/" +
+            "/11111.png\" data-type=\"png\" data-w=\"1350\" style=\"display: block; margin-right: auto; margin-left: auto; zoom: 80%; width: 677px !important; height: auto !important; visibility: visible !important;\" _width=\"677px\" data-darkmode-color-16129599806201=\"rgb(163, 163, 163)\" data-darkmode-original-color-16129599806201=\"#fff|rgb(0,0,0)\" class=\"\" src=\"https://file.codingstyle.cn/article/photo/" +
             currentYear +
             "/11111.png\" src=\"https://file.codingstyle.cn/article/photo/" +
             currentYear +
-            "/11111.png?wx_fmt=png&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1&amp;wx_co=1\" crossorigin=\"anonymous\" alt=\"图片\" data-fail=\"0\">";
+            "/11111.png&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1&amp;wx_co=1\" crossorigin=\"anonymous\" alt=\"图片\" data-fail=\"0\">";
     }
 
     @Test

@@ -1,4 +1,4 @@
-package cn.codingstyle.spider.application;
+package cn.codingstyle.spider.crawl.storage;
 
 import cn.codingstyle.spider.FileUtil;
 import com.UpYun;
@@ -14,11 +14,11 @@ import static java.lang.String.format;
 
 @Component
 @Slf4j
-public class UpYunHelper {
+public class CloudStorageHelper {
     private final FileUtil fileUtil;
     private final UpYunConfig upYunConfig;
 
-    public UpYunHelper(FileUtil fileUtil, UpYunConfig upYunConfig) {
+    public CloudStorageHelper(FileUtil fileUtil, UpYunConfig upYunConfig) {
         this.fileUtil = fileUtil;
         this.upYunConfig = upYunConfig;
     }

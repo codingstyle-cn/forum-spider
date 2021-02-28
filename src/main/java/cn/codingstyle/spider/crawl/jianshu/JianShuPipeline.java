@@ -1,12 +1,10 @@
 package cn.codingstyle.spider.crawl.jianshu;
 
-import cn.codingstyle.spider.application.UpYunHelper;
+import cn.codingstyle.spider.crawl.storage.CloudStorageHelper;
 import cn.codingstyle.spider.crawl.PlatformPipeline;
 import cn.codingstyle.spider.crawl.FileNameGenerator;
 import cn.codingstyle.spider.domain.CrawlRecordDetailService;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * @author Huisheng.Jin
@@ -17,9 +15,9 @@ public class JianShuPipeline extends PlatformPipeline {
 
     private final static String CRAWLING_SOURCE = "jianshu";
 
-    public JianShuPipeline(UpYunHelper upYunHelper, CrawlRecordDetailService crawlRecordDetailService,
+    public JianShuPipeline(CloudStorageHelper cloudStorageHelper, CrawlRecordDetailService crawlRecordDetailService,
                            FileNameGenerator fileNameGenerator) {
-        super(upYunHelper, crawlRecordDetailService, fileNameGenerator);
+        super(cloudStorageHelper, crawlRecordDetailService, fileNameGenerator);
     }
 
     @Override
@@ -33,28 +31,21 @@ public class JianShuPipeline extends PlatformPipeline {
         return CRAWLING_SOURCE;
     }
 
-    @Override
-    protected String replaceAndUploadImage(String body, String sourceUrl) {
-        String fileName = getFileName(sourceUrl);
-        upYunHelper.uploadFile(sourceUrl, getUploadFilePath(fileName));
-        return replaceImageUrl(body, sourceUrl, getNewUrl(fileName));
-    }
-
-    protected String editImageHtmlLabelFormat(String body) {
-        body = body.replaceAll("data-original-src", "src")
+    protected String editImageHtmlLabelFormat(String content) {
+        content = content.replaceAll("data-original-src", "src")
                 .replace("style=\"cursor: zoom-in;\"",
                         "style=\"padding-bottom: 25px;cursor: zoom-in;\"");
-        return body;
+        return content;
     }
 
-    private String removeImageCaption(String body) {
-        return body.replaceAll("(<div class=\"image-caption\">)(?:(?:(?:&#160;)|(?:\\s+))*)((\\w|\\W)*?)(</div>)"
+    private String removeImageCaption(String content) {
+        return content.replaceAll("(<div class=\"image-caption\">)(?:(?:(?:&#160;)|(?:\\s+))*)((\\w|\\W)*?)(</div>)"
                 , "");
     }
 
     @Override
-    protected String replaceImageUrl(String body, String oldUrl, String newUrl) {
-        return body.replaceAll(oldUrl, newUrl);
+    protected String replaceImageUrl(String content, String sourceUrl, String newUrl) {
+        return content.replaceAll(sourceUrl, newUrl);
     }
 
     @Override

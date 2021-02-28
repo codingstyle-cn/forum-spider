@@ -1,6 +1,6 @@
 package cn.codingstyle.spider.crawl.jianshu;
 
-import cn.codingstyle.spider.application.UpYunHelper;
+import cn.codingstyle.spider.crawl.storage.CloudStorageHelper;
 import cn.codingstyle.spider.crawl.FileNameGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,15 +22,15 @@ class JianShuPipelineTest {
 
     private final String currentYear = LocalDate.now().getYear() + "";
     private JianShuPipeline pipeline;
-    private UpYunHelper upYunHelper;
+    private CloudStorageHelper cloudStorageHelper;
     private FileNameGenerator fileNameGenerator;
 
 
     @BeforeEach
     void setUp() {
-        upYunHelper = mock(UpYunHelper.class);
+        cloudStorageHelper = mock(CloudStorageHelper.class);
         fileNameGenerator = mock(FileNameGenerator.class);
-        pipeline = new JianShuPipeline(upYunHelper, null, fileNameGenerator);
+        pipeline = new JianShuPipeline(cloudStorageHelper, null, fileNameGenerator);
     }
 
     @Test
@@ -40,7 +40,7 @@ class JianShuPipelineTest {
         String fileName = "4790087-0a958b58ad2c6511.png";
         when(fileNameGenerator.createFileName("png")).thenReturn(fileName);
         String modifiedContent = pipeline.modifyContent(content, urls);
-        verify(upYunHelper).uploadFile("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png",
+        verify(cloudStorageHelper).uploadFile("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png",
             "/article/photo/" + LocalDate.now().getYear() + "/" + fileName);
 
         assertThat(modifiedContent).isEqualTo(expectedContent());

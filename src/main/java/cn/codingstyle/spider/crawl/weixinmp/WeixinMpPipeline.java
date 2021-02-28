@@ -1,6 +1,6 @@
 package cn.codingstyle.spider.crawl.weixinmp;
 
-import cn.codingstyle.spider.application.UpYunHelper;
+import cn.codingstyle.spider.crawl.storage.CloudStorageHelper;
 import cn.codingstyle.spider.crawl.FileNameGenerator;
 import cn.codingstyle.spider.crawl.PlatformPipeline;
 import cn.codingstyle.spider.domain.CrawlRecordDetailService;
@@ -11,10 +11,10 @@ public class WeixinMpPipeline extends PlatformPipeline {
 
     private final static String CRAWLING_SOURCE = "weixinmp";
 
-    public WeixinMpPipeline(UpYunHelper upYunHelper,
+    public WeixinMpPipeline(CloudStorageHelper cloudStorageHelper,
                             CrawlRecordDetailService crawlRecordDetailService,
                             FileNameGenerator fileNameGenerator) {
-        super(upYunHelper, crawlRecordDetailService, fileNameGenerator);
+        super(cloudStorageHelper, crawlRecordDetailService, fileNameGenerator);
     }
 
     @Override
@@ -28,17 +28,8 @@ public class WeixinMpPipeline extends PlatformPipeline {
     }
 
     @Override
-    protected String replaceAndUploadImage(String body, String url) {
-        String sourceUrl = url.substring(0, url.lastIndexOf("?"));
-        String fileName = getFileName(url);
-        String newUrl = getNewUrl(fileName);
-        upYunHelper.uploadFile(sourceUrl, getUploadFilePath(fileName));
-        return replaceImageUrl(body, sourceUrl, newUrl);
-    }
-
-    @Override
-    protected String replaceImageUrl(String body, String oldUrl, String newUrl) {
-        return body.replaceAll(oldUrl, newUrl + "\" src=\"" + newUrl);
+    protected String replaceImageUrl(String content, String sourceUrl, String newUrl) {
+        return content.replace(sourceUrl, newUrl + "\" src=\"" + newUrl);
     }
 
     @Override

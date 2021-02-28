@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class WeixinMpPipeline extends PlatformPipeline {
 
-    private final static String CRAWLING_SOURCE = "weixinmp";
-
     public WeixinMpPipeline(CloudStorageHelper cloudStorageHelper,
                             CrawlRecordDetailService crawlRecordDetailService,
                             FileNameGenerator fileNameGenerator) {
@@ -20,11 +18,6 @@ public class WeixinMpPipeline extends PlatformPipeline {
     @Override
     protected String modifyStyle(String content) {
         return content;
-    }
-
-    @Override
-    protected String getCrawlingSource() {
-        return CRAWLING_SOURCE;
     }
 
     @Override

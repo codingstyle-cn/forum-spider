@@ -10,6 +10,8 @@ import java.util.List;
 @Component
 public class WeixinMpProcessor extends PlatformProcessor {
 
+    private static String CRAWLING_SOURCE = "weixinmp";
+
     @Override
     protected String parseContent(Html html) {
         String content = html.xpath("//div[@id='js_content']").toString();
@@ -45,6 +47,11 @@ public class WeixinMpProcessor extends PlatformProcessor {
             return thirdAuthorHtmlFormat.toString().trim();
         }
         return "";
+    }
+
+    @Override
+    protected String getCrawlingSource() {
+        return CRAWLING_SOURCE;
     }
 
 }

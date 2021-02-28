@@ -42,11 +42,9 @@ public abstract class PlatformPipeline implements Pipeline {
                 .sync(false)
                 .originalUrl(data.getOriginalUrl())
                 .recordId(data.getRecordId())
-                .source(getCrawlingSource())
+                .source(data.getSource())
                 .build();
     }
-
-    protected abstract String getCrawlingSource();
 
     public String modifyContent(String content, List<String> imageUrls) {
         content = modifyImages(content, imageUrls);

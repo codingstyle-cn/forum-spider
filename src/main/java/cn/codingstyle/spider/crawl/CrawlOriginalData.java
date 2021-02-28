@@ -16,4 +16,5 @@ public class CrawlOriginalData {
     private String content;
     private String originalUrl;
     private List<String> imageUrls;
+    private String source;
 }

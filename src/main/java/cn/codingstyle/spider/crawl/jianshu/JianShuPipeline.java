@@ -6,14 +6,8 @@ import cn.codingstyle.spider.crawl.FileNameGenerator;
 import cn.codingstyle.spider.domain.CrawlRecordDetailService;
 import org.springframework.stereotype.Component;
 
-/**
- * @author Huisheng.Jin
- * @version 2018/05/07.
- */
 @Component
 public class JianShuPipeline extends PlatformPipeline {
-
-    private final static String CRAWLING_SOURCE = "jianshu";
 
     public JianShuPipeline(CloudStorageHelper cloudStorageHelper, CrawlRecordDetailService crawlRecordDetailService,
                            FileNameGenerator fileNameGenerator) {
@@ -24,11 +18,6 @@ public class JianShuPipeline extends PlatformPipeline {
     protected String modifyStyle(String content) {
         content = editImageHtmlLabelFormat(content);
         return removeImageCaption(content);
-    }
-
-    @Override
-    protected String getCrawlingSource() {
-        return CRAWLING_SOURCE;
     }
 
     protected String editImageHtmlLabelFormat(String content) {

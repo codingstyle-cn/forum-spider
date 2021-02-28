@@ -19,17 +19,19 @@ public abstract class PlatformPipeline implements Pipeline {
     protected final CloudStorageHelper cloudStorageHelper;
     protected final CrawlRecordDetailService crawlRecordDetailService;
     protected final FileNameGenerator fileNameGenerator;
+    private final ArticleContentModifiers articleContentModifiers;
 
-    public PlatformPipeline(CloudStorageHelper cloudStorageHelper, CrawlRecordDetailService crawlRecordDetailService, FileNameGenerator fileNameGenerator) {
+    public PlatformPipeline(CloudStorageHelper cloudStorageHelper, CrawlRecordDetailService crawlRecordDetailService, FileNameGenerator fileNameGenerator, ArticleContentModifiers articleContentModifiers) {
         this.cloudStorageHelper = cloudStorageHelper;
         this.crawlRecordDetailService = crawlRecordDetailService;
         this.fileNameGenerator = fileNameGenerator;
+        this.articleContentModifiers = articleContentModifiers;
     }
 
     @Override
     public void process(ResultItems resultItems, Task task) {
         CrawlOriginalData data = resultItems.get("crawlOriginalData");
-        String content = modifyContent(data.getContent(), data.getImageUrls());
+        String content = articleContentModifiers.modify(data);
         crawlRecordDetailService.save(createCrawlRecordDetail(data, content));
     }
 
@@ -48,8 +50,7 @@ public abstract class PlatformPipeline implements Pipeline {
 
     public String modifyContent(String content, List<String> imageUrls) {
         content = modifyImages(content, imageUrls);
-        content = modifyStyle(content);
-        return content;
+        return modifyStyle(content);
     }
 
     protected String modifyImages(String content, List<String> imageUrls) {

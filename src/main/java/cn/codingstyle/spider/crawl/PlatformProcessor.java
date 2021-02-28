@@ -36,9 +36,9 @@ public abstract class PlatformProcessor implements PageProcessor {
         String subject = parseSubject(html);
         String content = parseContent(html);
         String source = getCrawlingSource();
-        log.info("author: {}, article content is not blank? : {}", author, StringUtils.isNotBlank(content));
         List<String> imageUrls = parseImageUrls(html);
-        return createCrawlOriginalData(originalUrl, author, subject, content, imageUrls,source);
+        log.info("author: {}, article content is not blank? : {}", author, StringUtils.isNotBlank(content));
+        return createCrawlOriginalData(originalUrl, author, subject, content, imageUrls, source);
     }
 
     protected CrawlOriginalData createCrawlOriginalData(String originalUrl, String author,

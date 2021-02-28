@@ -30,7 +30,7 @@ class JianShuPipelineTest {
     void setUp() {
         cloudStorageHelper = mock(CloudStorageHelper.class);
         fileNameGenerator = mock(FileNameGenerator.class);
-        pipeline = new JianShuPipeline(cloudStorageHelper, null, fileNameGenerator);
+        pipeline = new JianShuPipeline(cloudStorageHelper, null, fileNameGenerator, null);
     }
 
     @Test
@@ -41,7 +41,7 @@ class JianShuPipelineTest {
         when(fileNameGenerator.createFileName("png")).thenReturn(fileName);
         String modifiedContent = pipeline.modifyContent(content, urls);
         verify(cloudStorageHelper).uploadFile("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png",
-            "/article/photo/" + LocalDate.now().getYear() + "/" + fileName);
+                "/article/photo/" + LocalDate.now().getYear() + "/" + fileName);
 
         assertThat(modifiedContent).isEqualTo(expectedContent());
     }
@@ -55,8 +55,8 @@ class JianShuPipelineTest {
 
     private String expectedContent() {
         return "<img src=\"https://file.codingstyle.cn/article/photo/" +
-            currentYear +
-            "/4790087-0a958b58ad2c6511.png\" data-original-width=\"384\" data-original-height=\"232\" data-original-format=\"image/png\" data-original-filesize=\"34390\" data-image-index=\"0\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"\" >";
+                currentYear +
+                "/4790087-0a958b58ad2c6511.png\" data-original-width=\"384\" data-original-height=\"232\" data-original-format=\"image/png\" data-original-filesize=\"34390\" data-image-index=\"0\" style=\"padding-bottom: 25px;cursor: zoom-in;\" class=\"\" >";
     }
 
     @Test

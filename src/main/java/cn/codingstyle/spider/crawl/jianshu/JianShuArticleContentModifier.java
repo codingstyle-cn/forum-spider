@@ -1,22 +1,11 @@
 package cn.codingstyle.spider.crawl.jianshu;
 
 import cn.codingstyle.spider.crawl.ArticleContentModifier;
-import cn.codingstyle.spider.crawl.ArticleContentModifiers;
-import cn.codingstyle.spider.crawl.storage.CloudStorageHelper;
-import cn.codingstyle.spider.crawl.PlatformPipeline;
-import cn.codingstyle.spider.crawl.FileNameGenerator;
-import cn.codingstyle.spider.domain.CrawlRecordDetailService;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
-public class JianShuPipeline extends PlatformPipeline {
-
-    public JianShuPipeline(CloudStorageHelper cloudStorageHelper, CrawlRecordDetailService crawlRecordDetailService,
-                           FileNameGenerator fileNameGenerator, List<ArticleContentModifier> articleContentModifiers) {
-        super(cloudStorageHelper, crawlRecordDetailService, fileNameGenerator, new ArticleContentModifiers(articleContentModifiers));
-    }
+public class JianShuArticleContentModifier extends ArticleContentModifier {
+    private static String source = "jianshu";
 
     @Override
     protected String modifyStyle(String content) {
@@ -44,5 +33,10 @@ public class JianShuPipeline extends PlatformPipeline {
     @Override
     public String getImageType(String url) {
         return url.substring(url.lastIndexOf(".") + 1);
+    }
+
+    @Override
+    public String getSource() {
+        return source;
     }
 }

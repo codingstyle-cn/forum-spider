@@ -1,7 +1,6 @@
 package cn.codingstyle.spider.crawl;
 
 import cn.codingstyle.spider.crawl.storage.CloudStorageHelper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;

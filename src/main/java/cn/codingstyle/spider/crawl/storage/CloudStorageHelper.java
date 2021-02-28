@@ -43,7 +43,7 @@ public class CloudStorageHelper {
     }
 
     private String addProtocolPrefix(String url) {
-        return url.startsWith("http") ? String.format("https:%s", url) : url;
+        return url.startsWith("http") ? url : String.format("https:%s", url);
     }
 
     private boolean upload(File file, String uploadFilePath) throws IOException, UpException {

@@ -1,7 +1,7 @@
-package cn.codingstyle.spider.crawl.jianshu;
+package cn.codingstyle.spider.crawl;
 
 import cn.codingstyle.spider.crawl.selenium.SeleniumDownloader;
-import cn.codingstyle.spider.crawl.weixinmp.PlatformProcessor;
+import cn.codingstyle.spider.crawl.PlatformProcessor;
 import org.springframework.beans.factory.annotation.Value;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.pipeline.Pipeline;

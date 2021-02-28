@@ -1,6 +1,6 @@
 package cn.codingstyle.spider.crawl.weixinmp;
 
-import cn.codingstyle.spider.crawl.jianshu.Crawler;
+import cn.codingstyle.spider.crawl.Crawler;
 import org.springframework.stereotype.Component;
 
 @Component

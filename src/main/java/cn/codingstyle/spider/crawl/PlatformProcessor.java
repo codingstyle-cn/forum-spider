@@ -1,4 +1,4 @@
-package cn.codingstyle.spider.crawl.weixinmp;
+package cn.codingstyle.spider.crawl;
 
 import cn.codingstyle.spider.crawl.CrawlOriginalData;
 import lombok.extern.slf4j.Slf4j;

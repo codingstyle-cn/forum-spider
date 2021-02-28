@@ -1,6 +1,6 @@
 package cn.codingstyle.spider.crawl.weixinmp;
 
-import org.apache.commons.lang3.StringUtils;
+import cn.codingstyle.spider.crawl.PlatformProcessor;
 import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.selector.Html;
 import us.codecraft.webmagic.selector.Selectable;

@@ -1,4 +1,4 @@
-package cn.codingstyle.spider.crawl.weixinmp;
+package cn.codingstyle.spider.crawl;
 
 import org.springframework.stereotype.Component;
 

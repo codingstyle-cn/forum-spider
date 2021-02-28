@@ -2,7 +2,7 @@ package cn.codingstyle.spider;
 
 import cn.codingstyle.spider.application.CreateCrawlCommand;
 import cn.codingstyle.spider.application.UpYunHelper;
-import cn.codingstyle.spider.crawl.weixinmp.FileNameGenerator;
+import cn.codingstyle.spider.crawl.FileNameGenerator;
 import cn.codingstyle.spider.domain.CrawlRecordDetail;
 import cn.codingstyle.spider.domain.CrawlRecordDetailRepository;
 import cn.codingstyle.web.rest.TestUtil;

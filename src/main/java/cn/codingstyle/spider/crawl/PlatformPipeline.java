@@ -1,7 +1,6 @@
 package cn.codingstyle.spider.crawl;
 
 import cn.codingstyle.spider.application.UpYunHelper;
-import cn.codingstyle.spider.crawl.weixinmp.FileNameGenerator;
 import cn.codingstyle.spider.domain.CrawlRecordDetail;
 import cn.codingstyle.spider.domain.CrawlRecordDetailService;
 import us.codecraft.webmagic.ResultItems;
@@ -47,9 +46,15 @@ public abstract class PlatformPipeline implements Pipeline {
                 .build();
     }
 
+    protected abstract String modifyStyle(String content);
+
     protected abstract String getCrawlingSource();
 
-    protected abstract String modifyContent(String content, List<String> imageUrls);
+    public String modifyContent(String content, List<String> imageUrls) {
+        content = modifyImages(content, imageUrls);
+        content = modifyStyle(content);
+        return content;
+    }
 
     protected String modifyImages(String body, List<String> imageUrls) {
         if (imageUrls.size() <= 0) {
@@ -79,6 +84,8 @@ public abstract class PlatformPipeline implements Pipeline {
         String imageType = getImageType(url);
         return fileNameGenerator.createFileName(imageType);
     }
+
+    protected abstract String replaceImageUrl(String body, String oldUrl, String newUrl);
 
     public abstract String getImageType(String url);
 }

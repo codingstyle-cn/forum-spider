@@ -1,6 +1,6 @@
 package cn.codingstyle.spider.crawl.jianshu;
 
-import cn.codingstyle.spider.crawl.weixinmp.PlatformProcessor;
+import cn.codingstyle.spider.crawl.PlatformProcessor;
 import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.selector.Html;
 

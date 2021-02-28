@@ -1,13 +1,12 @@
 package cn.codingstyle.spider.crawl.weixinmp;
 
 import cn.codingstyle.spider.application.UpYunHelper;
-import cn.codingstyle.spider.crawl.jianshu.JianShuPipeline;
+import cn.codingstyle.spider.crawl.FileNameGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.singletonList;

@@ -1,5 +1,6 @@
 package cn.codingstyle.spider.crawl.jianshu;
 
+import cn.codingstyle.spider.crawl.Crawler;
 import org.springframework.stereotype.Component;
 
 @Component

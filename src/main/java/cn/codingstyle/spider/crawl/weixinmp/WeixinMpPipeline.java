@@ -1,11 +1,10 @@
 package cn.codingstyle.spider.crawl.weixinmp;
 
 import cn.codingstyle.spider.application.UpYunHelper;
+import cn.codingstyle.spider.crawl.FileNameGenerator;
 import cn.codingstyle.spider.crawl.PlatformPipeline;
 import cn.codingstyle.spider.domain.CrawlRecordDetailService;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class WeixinMpPipeline extends PlatformPipeline {
@@ -13,13 +12,14 @@ public class WeixinMpPipeline extends PlatformPipeline {
     private final static String CRAWLING_SOURCE = "weixinmp";
 
     public WeixinMpPipeline(UpYunHelper upYunHelper,
-                            CrawlRecordDetailService crawlRecordDetailService, FileNameGenerator fileNameGenerator) {
+                            CrawlRecordDetailService crawlRecordDetailService,
+                            FileNameGenerator fileNameGenerator) {
         super(upYunHelper, crawlRecordDetailService, fileNameGenerator);
     }
 
     @Override
-    protected String modifyContent(String content, List<String> imageUrls) {
-        return modifyImages(content, imageUrls);
+    protected String modifyStyle(String content) {
+        return content;
     }
 
     @Override
@@ -36,6 +36,7 @@ public class WeixinMpPipeline extends PlatformPipeline {
         return replaceImageUrl(body, sourceUrl, newUrl);
     }
 
+    @Override
     protected String replaceImageUrl(String body, String oldUrl, String newUrl) {
         return body.replaceAll(oldUrl, newUrl + "\" src=\"" + newUrl);
     }

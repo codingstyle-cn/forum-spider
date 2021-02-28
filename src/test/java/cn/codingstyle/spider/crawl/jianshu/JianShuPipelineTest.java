@@ -1,7 +1,7 @@
 package cn.codingstyle.spider.crawl.jianshu;
 
 import cn.codingstyle.spider.application.UpYunHelper;
-import cn.codingstyle.spider.crawl.weixinmp.FileNameGenerator;
+import cn.codingstyle.spider.crawl.FileNameGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,6 @@
 package cn.codingstyle.spider.application;
 
-import cn.codingstyle.spider.crawl.jianshu.Crawler;
+import cn.codingstyle.spider.crawl.Crawler;
 import cn.codingstyle.spider.domain.CrawlRecord;
 import cn.codingstyle.spider.domain.CrawlRecordService;
 import org.springframework.stereotype.Service;

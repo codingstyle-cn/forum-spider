@@ -9,10 +9,13 @@ import java.util.List;
 
 @Component
 public abstract class ArticleContentModifier {
-    @Autowired
-    private CloudStorageHelper cloudStorageHelper;
-    @Autowired
-    private FileNameGenerator fileNameGenerator;
+    private final CloudStorageHelper cloudStorageHelper;
+    private final FileNameGenerator fileNameGenerator;
+
+    protected ArticleContentModifier(CloudStorageHelper cloudStorageHelper, FileNameGenerator fileNameGenerator) {
+        this.cloudStorageHelper = cloudStorageHelper;
+        this.fileNameGenerator = fileNameGenerator;
+    }
 
     public abstract String getSource();
 

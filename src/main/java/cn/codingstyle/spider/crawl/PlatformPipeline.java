@@ -1,30 +1,24 @@
 package cn.codingstyle.spider.crawl;
 
-import cn.codingstyle.spider.crawl.storage.CloudStorageHelper;
 import cn.codingstyle.spider.domain.CrawlRecordDetail;
 import cn.codingstyle.spider.domain.CrawlRecordDetailService;
+import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.ResultItems;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.pipeline.Pipeline;
-
-import java.time.LocalDate;
-import java.util.List;
 
 /**
  * PlatformPipeline
  *
  * @author f0rb on 2021-02-06
  */
-public abstract class PlatformPipeline implements Pipeline {
-    protected final CloudStorageHelper cloudStorageHelper;
+@Component
+public class PlatformPipeline implements Pipeline {
     protected final CrawlRecordDetailService crawlRecordDetailService;
-    protected final FileNameGenerator fileNameGenerator;
     private final ArticleContentModifiers articleContentModifiers;
 
-    public PlatformPipeline(CloudStorageHelper cloudStorageHelper, CrawlRecordDetailService crawlRecordDetailService, FileNameGenerator fileNameGenerator, ArticleContentModifiers articleContentModifiers) {
-        this.cloudStorageHelper = cloudStorageHelper;
+    public PlatformPipeline(CrawlRecordDetailService crawlRecordDetailService, ArticleContentModifiers articleContentModifiers) {
         this.crawlRecordDetailService = crawlRecordDetailService;
-        this.fileNameGenerator = fileNameGenerator;
         this.articleContentModifiers = articleContentModifiers;
     }
 
@@ -35,7 +29,7 @@ public abstract class PlatformPipeline implements Pipeline {
         crawlRecordDetailService.save(createCrawlRecordDetail(data, content));
     }
 
-    protected CrawlRecordDetail createCrawlRecordDetail(CrawlOriginalData data, String content) {
+    private CrawlRecordDetail createCrawlRecordDetail(CrawlOriginalData data, String content) {
         return CrawlRecordDetail
                 .builder()
                 .author(data.getAuthor())
@@ -48,47 +42,4 @@ public abstract class PlatformPipeline implements Pipeline {
                 .build();
     }
 
-    public String modifyContent(String content, List<String> imageUrls) {
-        content = modifyImages(content, imageUrls);
-        return modifyStyle(content);
-    }
-
-    protected String modifyImages(String content, List<String> imageUrls) {
-        if (imageUrls.size() <= 0) {
-            return content;
-        }
-        for (String url : imageUrls) {
-            content = replaceAndUploadImage(content, url);
-        }
-        return content;
-    }
-
-    protected abstract String modifyStyle(String content);
-
-    protected String replaceAndUploadImage(String content, String sourceUrl) {
-        String fileName = getFileName(sourceUrl);
-        cloudStorageHelper.uploadFile(sourceUrl, getUploadFilePath(fileName));
-        return replaceImageUrl(content, sourceUrl, getNewUrl(fileName));
-    }
-
-    protected String getUploadFilePath(String fileName) {
-        return "/article/photo/" + getCurrentYear() + "/" + fileName;
-    }
-
-    private int getCurrentYear() {
-        return LocalDate.now().getYear();
-    }
-
-    protected String getNewUrl(String fileName) {
-        return "https://file.codingstyle.cn/article/photo/" + getCurrentYear() + "/" + fileName;
-    }
-
-    protected String getFileName(String url) {
-        String imageType = getImageType(url);
-        return fileNameGenerator.createFileName(imageType);
-    }
-
-    protected abstract String replaceImageUrl(String body, String oldUrl, String newUrl);
-
-    public abstract String getImageType(String url);
 }

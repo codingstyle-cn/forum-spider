@@ -1,11 +1,17 @@
 package cn.codingstyle.spider.crawl.weixinmp;
 
 import cn.codingstyle.spider.crawl.ArticleContentModifier;
+import cn.codingstyle.spider.crawl.FileNameGenerator;
+import cn.codingstyle.spider.crawl.storage.CloudStorageHelper;
 import org.springframework.stereotype.Component;
 
 @Component
 public class WeixinMpArticleContentModifier extends ArticleContentModifier {
     private static String source = "weixinmp";
+
+    public WeixinMpArticleContentModifier(FileNameGenerator fileNameGenerator, CloudStorageHelper cloudStorageHelper) {
+        super(cloudStorageHelper, fileNameGenerator);
+    }
 
     @Override
     protected String modifyStyle(String content) {

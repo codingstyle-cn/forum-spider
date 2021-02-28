@@ -21,16 +21,16 @@ import static org.mockito.Mockito.*;
 class JianShuPipelineTest {
 
     private final String currentYear = LocalDate.now().getYear() + "";
-    private JianShuPipeline pipeline;
     private CloudStorageHelper cloudStorageHelper;
     private FileNameGenerator fileNameGenerator;
+    private JianShuArticleContentModifier articleContentModifier;
 
 
     @BeforeEach
     void setUp() {
         cloudStorageHelper = mock(CloudStorageHelper.class);
         fileNameGenerator = mock(FileNameGenerator.class);
-        pipeline = new JianShuPipeline(cloudStorageHelper, null, fileNameGenerator, null);
+        articleContentModifier = new JianShuArticleContentModifier(cloudStorageHelper, fileNameGenerator);
     }
 
     @Test
@@ -39,7 +39,8 @@ class JianShuPipelineTest {
         List<String> urls = singletonList("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png");
         String fileName = "4790087-0a958b58ad2c6511.png";
         when(fileNameGenerator.createFileName("png")).thenReturn(fileName);
-        String modifiedContent = pipeline.modifyContent(content, urls);
+
+        String modifiedContent = articleContentModifier.modify(content, urls);
         verify(cloudStorageHelper).uploadFile("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png",
                 "/article/photo/" + LocalDate.now().getYear() + "/" + fileName);
 
@@ -49,7 +50,7 @@ class JianShuPipelineTest {
     @Test
     void should_remove_image_caption() {
         String content = "<div class=\"image-caption\">image.png</div>";
-        String modifiedContent = pipeline.modifyContent(content, new ArrayList<>());
+        String modifiedContent = articleContentModifier.modify(content, new ArrayList<>());
         assertThat(modifiedContent).isBlank();
     }
 
@@ -61,7 +62,7 @@ class JianShuPipelineTest {
 
     @Test
     void should_get_image_type() {
-        String imageType = pipeline.getImageType("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png");
+        String imageType = articleContentModifier.getImageType("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png");
         assertThat(imageType).isEqualTo("png");
     }
 

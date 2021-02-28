@@ -1,11 +1,17 @@
 package cn.codingstyle.spider.crawl.jianshu;
 
 import cn.codingstyle.spider.crawl.ArticleContentModifier;
+import cn.codingstyle.spider.crawl.FileNameGenerator;
+import cn.codingstyle.spider.crawl.storage.CloudStorageHelper;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JianShuArticleContentModifier extends ArticleContentModifier {
     private static String source = "jianshu";
+
+    public JianShuArticleContentModifier(CloudStorageHelper cloudStorageHelper, FileNameGenerator fileNameGenerator) {
+        super(cloudStorageHelper, fileNameGenerator);
+    }
 
     @Override
     protected String modifyStyle(String content) {

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JianShuArticleContentModifier extends ArticleContentModifier {
-    private static String source = "jianshu";
+    private static String SOURCE = "jianshu";
 
     public JianShuArticleContentModifier(CloudStorageHelper cloudStorageHelper, FileNameGenerator fileNameGenerator) {
         super(cloudStorageHelper, fileNameGenerator);
@@ -43,6 +43,6 @@ public class JianShuArticleContentModifier extends ArticleContentModifier {
 
     @Override
     public String getSource() {
-        return source;
+        return SOURCE;
     }
 }

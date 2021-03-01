@@ -20,7 +20,7 @@ public class SpiderResource {
 
     private final SpiderAppService spiderAppService;
     private final CrawlRecordAppService crawlRecordAppService;
-    private ArticleSyncService articleSyncService;
+    private final ArticleSyncService articleSyncService;
 
     public SpiderResource(SpiderAppService spiderAppService,
                           CrawlRecordAppService crawlRecordAppService,

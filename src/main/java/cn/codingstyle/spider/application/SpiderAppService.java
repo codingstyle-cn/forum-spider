@@ -23,11 +23,13 @@ public class SpiderAppService {
                 createCrawlCommand.getArticleCount(),
                 createCrawlCommand.getUrlsInString());
         for (Crawler crawler : crawlers) {
-            List<String> crawlingUrls = createCrawlCommand.filterUrlsBy(crawler.getBaseURL());
-            if (crawlingUrls.size() > 0) {
-                crawler.crawl(crawlingUrls, savedCrawlRecord.getId());
-            }
+            crawl(savedCrawlRecord.getId(), createCrawlCommand, crawler);
         }
+    }
+
+    private void crawl(Long crawlRecordId, CreateCrawlCommand createCrawlCommand, Crawler crawler) {
+        List<String> crawlingUrls = createCrawlCommand.filterUrlsBy(crawler.getBaseURL());
+        crawler.crawl(crawlingUrls, crawlRecordId);
     }
 
 }

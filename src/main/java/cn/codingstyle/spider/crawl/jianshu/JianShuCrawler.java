@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class JianShuCrawler extends Crawler {
 
-    public JianShuCrawler(PlatformPipeline jianShuPipeline, JianShuProcessor processor) {
-        super(jianShuPipeline, processor);
+    public JianShuCrawler(PlatformPipeline pipeline, JianShuProcessor processor) {
+        super(pipeline, processor);
         setBaseURL("https://www.jianshu.com/");
     }
 

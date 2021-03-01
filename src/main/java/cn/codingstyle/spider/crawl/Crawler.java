@@ -1,7 +1,6 @@
 package cn.codingstyle.spider.crawl;
 
 import cn.codingstyle.spider.crawl.selenium.SeleniumDownloader;
-import cn.codingstyle.spider.crawl.PlatformProcessor;
 import org.springframework.beans.factory.annotation.Value;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.pipeline.Pipeline;
@@ -30,12 +29,18 @@ public class Crawler {
         this.platformProcessor = platformProcessor;
     }
 
-    public void crawl(List<String> urlList, Long recordId) {
+    public void crawl(List<String> crawlingUrls, Long crawlRecordId) {
+        if (crawlingUrls.size() > 0) {
+            crawl(crawlRecordId, crawlingUrls);
+        }
+    }
+
+    private void crawl(Long recordId, List<String> urlList) {
         platformProcessor.setRecordId(recordId);
         Spider.create(this.platformProcessor).thread(1)
-            .setDownloader(new SeleniumDownloader(seleniumHost))
-            .addPipeline(pipeline)
-            .addUrl(urlList.toArray(new String[urlList.size()]))
-            .runAsync();
+                .setDownloader(new SeleniumDownloader(seleniumHost))
+                .addPipeline(pipeline)
+                .addUrl(urlList.toArray(new String[urlList.size()]))
+                .runAsync();
     }
 }

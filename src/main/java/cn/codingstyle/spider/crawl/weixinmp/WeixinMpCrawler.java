@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class WeixinMpCrawler extends Crawler {
 
-    public WeixinMpCrawler(PlatformPipeline weixinMpPipeline, WeixinMpProcessor processor) {
-        super(weixinMpPipeline, processor);
+    public WeixinMpCrawler(PlatformPipeline pipeline, WeixinMpProcessor processor) {
+        super(pipeline, processor);
         setBaseURL("https://mp.weixin.qq.com/");
     }
 

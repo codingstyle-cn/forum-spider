@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class WeixinMpArticleContentModifier extends ArticleContentModifier {
-    private static String source = "weixinmp";
+    private static String CRAWLING_SOURCE = "weixinmp";
 
     public WeixinMpArticleContentModifier(FileNameGenerator fileNameGenerator, CloudStorageHelper cloudStorageHelper) {
         super(cloudStorageHelper, fileNameGenerator);
@@ -30,6 +30,6 @@ public class WeixinMpArticleContentModifier extends ArticleContentModifier {
 
     @Override
     public String getSource() {
-        return source;
+        return CRAWLING_SOURCE;
     }
 }

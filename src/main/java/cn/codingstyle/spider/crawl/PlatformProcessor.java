@@ -65,9 +65,17 @@ public abstract class PlatformProcessor implements PageProcessor {
 
     protected abstract String parseContent(Html html);
 
+    protected List<String> extractStrings(Html html, String xpath) {
+        return html.xpath(xpath).all();
+    }
+
     protected abstract String parseSubject(Html html);
 
     protected abstract String parseAuthor(Html html);
+
+    protected String extractString(Html html, String xpathStr) {
+        return html.xpath(xpathStr).toString().trim();
+    }
 
     protected abstract String getCrawlingSource();
 

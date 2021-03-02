@@ -72,6 +72,63 @@ class SpiderResourceIT {
         assertThat(removeImageAltStyle(weixinMpArticle.getContent())).isEqualTo(removeImageAltStyle(expectedMpContent()));
     }
 
+    @Test
+    void should_crawl_segmentfault_platform_success() throws Exception {
+        CreateCrawlCommand command = new CreateCrawlCommand();
+        command.setUrls("https://segmentfault.com/a/1190000023018784");
+        when(fileNameGenerator.createFileName("")).thenReturn("mock-image");
+        postAndWait(command);
+
+        CrawlRecordDetail recordDetail = crawlRecordDetailRepository.findAll().get(0);
+        assertThat(recordDetail.getAuthor()).isEqualTo("付吉飞");
+        assertThat(recordDetail.getSubject()).isEqualTo("cypress学习笔记一(安装)");
+        assertThat(recordDetail.getContent()).isEqualTo(expectedSegmentFaultContent());
+    }
+
+    private String expectedSegmentFaultContent() {
+        return "<article class=\"article fmt article-content \"> \n" +
+                " <p>一、环境准备：</p> \n" +
+                " <ul> \n" +
+                "  <li>node环境</li> \n" +
+                "  <li>已经执行npm init</li> \n" +
+                "  <li>已有node_modules目录或者<code>package.json</code>文件</li> \n" +
+                " </ul> \n" +
+                " <p>二、安装<br>cypress的安装官网提供了几种方式：</p> \n" +
+                " <p>1、通过npm安装</p> \n" +
+                " <div class=\"widget-codetool\" style=\"display:none;\"> \n" +
+                "  <div class=\"widget-codetool--inner\"> \n" +
+                "   <button type=\"button\" class=\"btn btn-dark far fa-copy rounded-0 sflex-center copyCode\" data-toggle=\"tooltip\" data-placement=\"top\" data-clipboard-text=\"$ npm install cypress --save-dev\" title=\"\" data-original-title=\"复制\"></button> \n" +
+                "  </div> \n" +
+                " </div>\n" +
+                " <pre class=\"hljs q\"><code style=\"word-break: break-word; white-space: initial;\">$ npm install cypress --<span class=\"hljs-built_in\">save</span>-<span class=\"hljs-built_in\">dev</span></code></pre> \n" +
+                " <p>npm安装是将cypress作为项目的一个依赖包引入，安装前需要进入到项目目录中。<br>此安装方式比较便捷，也是官网优先推荐的。但是在安装时会遇到下载cypress失败、下载cypress较慢的问题，主要原因是下载时走国外镜像，大概率会失败。</p> \n" +
+                " <p>在网上查了很多相关文章并没有找到合理的解决方案，其中有一个方案是推荐搭建自己的私有仓库，将镜像放在私有仓库中，后续下载、打包都会比较快。<br>如果公司需要用cypress做自动化框架，这个方式是必须的，大部分公司都有自己的私有仓库。但是对于测试者来说，自己体验或者学习，搭建一个私有仓库的方法太重了。<br>最终的解决方案来自于官方文档：<br><span class=\"img-wrap\"><img class=\"lazy entered loaded\" data-src=\"https://file.codingstyle.cn/article/photo/2021/mock-image\" src=\"https://file.codingstyle.cn/article/photo/2021/mock-image\" alt=\"WX20200625-004424.png\" title=\"WX20200625-004424.png\" data-ll-status=\"loaded\" src=\"https://file.codingstyle.cn/article/photo/2021/mock-image\" src=\"https://file.codingstyle.cn/article/photo/2021/mock-image\"></span></p> \n" +
+                " <p>简单翻译下：<br>cypress需要配置网络代理，如果不设置代理将会放生一下情况：</p> \n" +
+                " <ul> \n" +
+                "  <li>本地调试时cypress将不可用</li> \n" +
+                "  <li>如果你的baseUrl不可用时，cypress将不会告警</li> \n" +
+                "  <li>cypress在登录或者测试时将无法连接Dashboard Service</li> \n" +
+                "  <li>使用<code>npm install cypress</code>方式安装时将会失败</li> \n" +
+                " </ul> \n" +
+                " <p>Linux或者MAC解决方案：<br><code>export HTTP_PROXY=http://my-company-proxy.com</code><br><code>export NO_PROXY=localhost,google.com,apple.com</code></p> \n" +
+                " <p>笔者使用的是第二个且配置的淘宝镜像，<code>export NO_PROXY=http://npm.taobao.org</code></p> \n" +
+                " <p>Window解决方案：<br><span class=\"img-wrap\"><img class=\"lazy\" data-src=\"https://file.codingstyle.cn/article/photo/2021/mock-image\" src=\"https://file.codingstyle.cn/article/photo/2021/mock-image\" alt=\"WX20200625-010340.png\" title=\"WX20200625-010340.png\"></span></p> \n" +
+                " <p>笔者用的Linux，windows没有尝试，可以参考官网步骤：<a href=\"https://docs.cypress.io/guides/references/proxy-configuration.html#Set-a-proxy-on-Linux-or-macOS\">https://docs.cypress.io/guide...</a></p> \n" +
+                " <p>2、通过yarn安装</p> \n" +
+                " <div class=\"widget-codetool\" style=\"display:none;\"> \n" +
+                "  <div class=\"widget-codetool--inner\"> \n" +
+                "   <button type=\"button\" class=\"btn btn-dark far fa-copy rounded-0 sflex-center copyCode\" data-toggle=\"tooltip\" data-placement=\"top\" data-clipboard-text=\"yarn add cypress --dev\" title=\"\" data-original-title=\"复制\"></button> \n" +
+                "  </div> \n" +
+                " </div>\n" +
+                " <pre class=\"hljs dockerfile\"><code style=\"word-break: break-word; white-space: initial;\">yarn <span class=\"hljs-keyword\">add</span><span class=\"bash\"> cypress --dev</span></code></pre> \n" +
+                " <p>配置和npm安装一致，只是命令不同，凭喜好选择。</p> \n" +
+                " <p>ps：使用npm、yarn方式安装时，请确保</p> \n" +
+                " <p>3、直接下载安装包</p> \n" +
+                " <p>这个安装方式适用于快速体验cypress，不支持录制用例功能。如果要使用录制功能，需要使用npm或者yarn的方式下载。<br>安装包下载地址：<a href=\"https://download.cypress.io/desktop\">https://download.cypress.io/d...</a></p> \n" +
+                " <p>本文主要目的是解决cypress通过npm或者yarn下载慢的问题，细节安装请移步官网</p> \n" +
+                "</article>";
+    }
+
     private String removeImageAltStyle(String content) {
         return content.replaceAll(" alt=\"Image\"", "");
     }

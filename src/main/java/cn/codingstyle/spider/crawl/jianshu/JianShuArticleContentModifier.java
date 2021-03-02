@@ -38,7 +38,7 @@ public class JianShuArticleContentModifier extends ArticleContentModifier {
 
     @Override
     public String getImageType(String url) {
-        return url.substring(url.lastIndexOf(".") + 1);
+        return url.substring(url.lastIndexOf("."));
     }
 
     @Override

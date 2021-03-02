@@ -10,6 +10,6 @@ public class FileNameGenerator {
     }
 
     public String createFileName(String imageType) {
-        return UUID.randomUUID().toString() + "." + imageType;
+        return UUID.randomUUID().toString() + imageType;
     }
 }

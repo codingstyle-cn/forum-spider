@@ -38,7 +38,7 @@ class JianShuPipelineTest {
         String content = "<div class=\"image-caption\">lambda.png</div><img data-original-src=\"//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png\" data-original-width=\"384\" data-original-height=\"232\" data-original-format=\"image/png\" data-original-filesize=\"34390\" data-image-index=\"0\" style=\"cursor: zoom-in;\" class=\"\" >";
         List<String> urls = singletonList("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png");
         String fileName = "4790087-0a958b58ad2c6511.png";
-        when(fileNameGenerator.createFileName("png")).thenReturn(fileName);
+        when(fileNameGenerator.createFileName(".png")).thenReturn(fileName);
 
         String modifiedContent = articleContentModifier.modify(content, urls);
         verify(cloudStorageHelper).uploadFile("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png",
@@ -63,7 +63,7 @@ class JianShuPipelineTest {
     @Test
     void should_get_image_type() {
         String imageType = articleContentModifier.getImageType("//upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png");
-        assertThat(imageType).isEqualTo("png");
+        assertThat(imageType).isEqualTo(".png");
     }
 
 

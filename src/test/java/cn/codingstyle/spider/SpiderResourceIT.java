@@ -49,8 +49,8 @@ class SpiderResourceIT {
     void should_crawl_jianshu_platform_success() throws Exception {
         CreateCrawlCommand command = new CreateCrawlCommand();
         command.setUrls("https://www.jianshu.com/p/e1810fdf5d11");
-        when(fileNameGenerator.createFileName("png")).thenReturn("mock-png.png");
-        when(fileNameGenerator.createFileName("gif")).thenReturn("mock-gif.gif");
+        when(fileNameGenerator.createFileName(".png")).thenReturn("mock-png.png");
+        when(fileNameGenerator.createFileName(".gif")).thenReturn("mock-gif.gif");
         postAndWait(command);
 
         CrawlRecordDetail jianshuArticle = crawlRecordDetailRepository.findAll().get(0);
@@ -63,7 +63,7 @@ class SpiderResourceIT {
     void should_crawl_weixinmp_platform_success() throws Exception {
         CreateCrawlCommand command = new CreateCrawlCommand();
         command.setUrls("https://mp.weixin.qq.com/s/NfJ_EafbZPyPLZEeHz0Dkw");
-        when(fileNameGenerator.createFileName("png")).thenReturn("1.png");
+        when(fileNameGenerator.createFileName(".png")).thenReturn("1.png");
         postAndWait(command);
 
         CrawlRecordDetail weixinMpArticle = crawlRecordDetailRepository.findAll().get(0);

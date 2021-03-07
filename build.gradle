@@ -342,3 +342,14 @@ if (project.hasProperty("nodeInstall")) {
 }
 compileJava.dependsOn processResources
 processResources.dependsOn bootBuildInfo
+
+apply plugin: 'jacoco'
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        html.enabled true
+    }
+}
+
+check.dependsOn jacocoTestReport

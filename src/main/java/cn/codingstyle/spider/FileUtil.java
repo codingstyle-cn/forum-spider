@@ -19,7 +19,7 @@ import java.util.Arrays;
 @Slf4j
 public class FileUtil {
 
-    private static final String IMAGES_DIR = "images/";
+    static final String IMAGES_DIR = "images/";
 
     private final RestTemplate restTemplate;
 
@@ -32,10 +32,10 @@ public class FileUtil {
         new File(IMAGES_DIR).mkdirs();
     }
 
-    public File downloadFile(String url) throws Exception {
+    public File downloadFile(String url) {
         log.info("start download file from: {}", url);
         Instant start = Instant.now();
-        String targetPath = IMAGES_DIR + url.substring(url.lastIndexOf("/") + 1);
+        String targetPath = IMAGES_DIR + url.substring(url.lastIndexOf('/') + 1);
         deleteFile(targetPath);
         restTemplate.execute(
             URI.create(url),

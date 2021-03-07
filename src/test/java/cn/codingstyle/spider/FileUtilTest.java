@@ -26,7 +26,7 @@ public class FileUtilTest {
     }
 
     private void deleteImagesDir() throws IOException {
-        File dir = new File("images");
+        File dir = new File(FileUtil.IMAGES_DIR);
         if (dir.exists()) {
             FileUtils.forceDelete(dir);
         }
@@ -38,35 +38,28 @@ public class FileUtilTest {
     }
 
     @Test
-    public void should_download_an_new_file() throws Exception {
+    public void should_download_an_new_file() {
+        prepareFakeFileForDeletion();
+
+        File file = fileUtil.downloadFile("https://upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png");
+        assertThat(file.length()).isEqualTo(34390);
+        assertThat(file.getName()).isEqualTo("4790087-0a958b58ad2c6511.png");
+
+    }
+
+    private void prepareFakeFileForDeletion() {
         File oldFile = new File("images/4790087-0a958b58ad2c6511.png");
         assertThat(oldFile.exists()).isFalse();
         assertThat(oldFile.mkdirs()).isTrue();
         assertThat(oldFile.length()).isEqualTo(64);
-
-        File file = fileUtil.downloadFile("https://upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png");
-        assertThat(file).isNotNull();
-        assertThat(file.length()).isEqualTo(34390);
-        assertThat(file.getName()).isEqualTo("4790087-0a958b58ad2c6511.png");
-
     }
 
     @Test
     public void should_not_download_file_when_the_url_is_not_correct() {
-        assertThrows(HttpClientErrorException.class,
-            () -> fileUtil.downloadFile("https://upload-images.jianshu.io/upload_images/404.png"));
+        assertThrows(
+            HttpClientErrorException.class,
+            () -> fileUtil.downloadFile("https://upload-images.jianshu.io/upload_images/404.png")
+        );
     }
 
-    @Test
-    public void should_delete_existed_file_befere_download() throws Exception {
-//        File dir = new File("images");
-//        dir.mkdirs();
-//        File fakeFile = new File(dir, "4790087-0a958b58ad2c6511.png");
-//        assertThat(fakeFile.createNewFile()).isTrue();
-//        assertThat(fakeFile.length()).isEqualTo(0);
-
-        File file = fileUtil.downloadFile("https://upload-images.jianshu.io/upload_images/4790087-0a958b58ad2c6511.png");
-        assertThat(file.length()).isEqualTo(34390);
-        assertThat(file.getName()).isEqualTo("4790087-0a958b58ad2c6511.png");
-    }
 }

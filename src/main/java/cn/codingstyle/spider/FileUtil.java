@@ -55,6 +55,7 @@ public class FileUtil {
     }
 
     private void deleteFile(String targetPath) throws IOException {
+        log.info("targetPath = {}", targetPath);
         File existedFile = new File(targetPath);
         if (!existedFile.exists()) {
             return;

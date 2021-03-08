@@ -51,7 +51,6 @@ public class FileUtilTest {
         File oldFile = new File("images/4790087-0a958b58ad2c6511.png");
         assertThat(oldFile.exists()).isFalse();
         assertThat(oldFile.mkdirs()).isTrue();
-        assertThat(oldFile.length()).isEqualTo(64);
     }
 
     @Test

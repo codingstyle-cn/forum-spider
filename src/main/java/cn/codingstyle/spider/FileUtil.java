@@ -19,6 +19,7 @@ import java.util.Arrays;
 @Slf4j
 public class FileUtil {
 
+
     static final String IMAGES_DIR = "images/";
 
     private final RestTemplate restTemplate;

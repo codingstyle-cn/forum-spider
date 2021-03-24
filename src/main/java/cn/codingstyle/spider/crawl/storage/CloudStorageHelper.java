@@ -47,11 +47,11 @@ public class CloudStorageHelper {
     }
 
     private boolean upload(File file, String uploadFilePath) throws IOException, UpException {
-        log.info("又拍云账号:\n{}", JSON.toJSONString(upYunConfig));
+        log.info("又拍云账号 username: {}", upYunConfig.getUsername());
         UpYun upyun = new UpYun(
-                upYunConfig.getBucketName(),
-                upYunConfig.getUsername(),
-                upYunConfig.getPassword());
+            upYunConfig.getBucketName(),
+            upYunConfig.getUsername(),
+            upYunConfig.getPassword());
         // 可选属性1，是否开启 debug 模式，默认不开启
         upyun.setDebug(false);
         // 可选属性2，超时时间，默认 30s
